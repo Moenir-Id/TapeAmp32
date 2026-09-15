@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.TapeAmp32" parent="android:Theme.Material.NoActionBar">
+        <!-- Warna Status Bar & Navigation Bar Hitam Pekat Hi-Fi -->
+        <item name="android:statusBarColor">#0A0906</item>
+        <item name="android:navigationBarColor">#0A0906</item>
+        <item name="android:windowBackground">#0A0906</item>
+
+        <!-- Memastikan Ikon Status Bar Tetap Terang (Putih/Emas) di Atas Latar Gelap -->
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+    </style>
+
+    <!--
+        BARU (v1.2) - FIX "layar putih polos saat app dibuka":
+
+        Tanpa tema splash khusus, Android 12+ menampilkan splash screen SISTEM
+        bawaan (defaultnya putih polos) SEBELUM window activity ini sempat
+        digambar, walau windowBackground activity di atas sudah gelap. Di
+        Android <12, jeda antara proses mulai dan window pertama digambar juga
+        bisa menampilkan flash putih dari window kosong default OS.
+
+        Style ini (dipasang sebagai tema activity, lihat AndroidManifest.xml)
+        memakai androidx.core.splashscreen supaya PERILAKU SERAGAM di semua
+        versi: background gelap Hi-Fi yang sama dengan Theme.TapeAmp32, ikon
+        aplikasi di tengah, lalu otomatis pindah ke Theme.TapeAmp32 begitu
+        installSplashScreen() dipanggil di MainActivity.
+    -->
+    <style name="Theme.TapeAmp32.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">#0A0906</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <item name="postSplashScreenTheme">@style/Theme.TapeAmp32</item>
+    </style>
+</resources>

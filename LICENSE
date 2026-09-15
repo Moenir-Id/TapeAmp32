@@ -1,0 +1,27 @@
+Copyright (c) 2026 Bruce (Moenir-Id). All Rights Reserved.
+
+This repository is published for portfolio, educational, and review
+purposes only.
+
+You MAY:
+- View, read, and study the source code.
+- Clone the repository for personal, local, non-distributed testing.
+- Reference this project (with attribution) when discussing or writing
+  about its architecture, features, or development approach.
+
+You MAY NOT, without prior written permission from the copyright holder:
+- Redistribute, publish, or sublicense this source code or any derivative
+  work, in whole or in part.
+- Publish a compiled build (APK/AAB) of this application or any
+  derivative of it to the Google Play Store, any other app store, or any
+  public distribution channel.
+- Use the application name, package identifier (com.projectzero.tapeamp32),
+  branding, or assets for a separate distributed product.
+- Use this code for commercial purposes without permission.
+
+No warranty of any kind is provided. This software is provided "as is",
+without any express or implied warranty of merchantability, fitness for
+a particular purpose, or non-infringement. The author is not liable for
+any damages arising from the use of this software.
+
+For permission requests, please open an issue on this repository.

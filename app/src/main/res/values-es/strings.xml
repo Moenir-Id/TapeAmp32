@@ -1,0 +1,387 @@
+<resources>
+    <!-- App Name -->
+    <string name="app_name">TapeAmp 32</string>
+
+    <!-- Navigation Rail Labels -->
+
+    <!-- Playback Service Notification -->
+    <string name="notification_channel_name">Reproducción multimedia de TapeAmp 32</string>
+    <string name="notification_channel_description">Muestra los controles del reproductor Hi-Fi TapeAmp 32</string>
+
+    <!-- Home Screen Widget -->
+    <string name="widget_prev_desc">Pista anterior</string>
+    <string name="widget_play_pause_desc">Reproducir/Pausar</string>
+    <string name="widget_next_desc">Pista siguiente</string>
+    <string name="widget_description">Controles de TapeAmp 32 desde la pantalla de inicio</string>
+    <string name="widget_no_song">-- No se está reproduciendo ninguna canción --</string>
+    <string name="widget_reel_desc">Carrete de casete girando</string>
+
+    <!-- Android Auto -->
+    <string name="android_auto_all_songs">Todas las canciones</string>
+
+    <!-- ============================================================
+         SETTINGS SCREEN: multi-language (ID/EN)
+         ============================================================ -->
+
+    <!-- Sidebar categories -->
+    <string name="settings_cat_streaming_label">STREAMING Y RED</string>
+    <string name="settings_cat_streaming_title">Streaming y Red</string>
+    <string name="settings_cat_ui_label">INTERFAZ Y APARIENCIA</string>
+    <string name="settings_cat_ui_title">Interfaz y Apariencia</string>
+    <string name="settings_cat_library_label">BIBLIOTECA</string>
+    <string name="settings_cat_library_title">Biblioteca</string>
+    <string name="settings_cat_system_label">SISTEMA</string>
+    <string name="settings_cat_system_title">Sistema</string>
+    <string name="settings_cat_backup_label">COPIA DE SEGURIDAD Y RESTAURACIÓN</string>
+    <string name="settings_cat_backup_title">Copia de Seguridad y Restauración</string>
+
+    <!-- Streaming & Network -->
+    <string name="settings_section_streaming_network">Streaming y Red</string>
+    <string name="settings_label_status">Estado</string>
+    <string name="settings_value_open_streaming">Abrir Streaming</string>
+    <string name="settings_label_buffer">Búfer</string>
+    <string name="settings_value_buffer_amount">3.2 seg</string>
+    <string name="settings_label_connection">Conexión</string>
+    <string name="settings_value_icecast">Icecast</string>
+    <string name="settings_action_open_streaming">Abrir Streaming</string>
+
+    <!-- UI & Appearance -->
+    <string name="settings_label_theme_accent">Color de Acento del Tema</string>
+    <string name="settings_label_compact_vu">Mostrar Vúmetro en Modo Compacto</string>
+    <string name="settings_label_reel_animation">Activar Animación de Carrete Giratorio</string>
+
+    <!-- Library -->
+    <string name="settings_label_auto_scan">Escanear Carpeta Especificada al Iniciar</string>
+    <string name="settings_label_ignore_short">Ignorar Pistas Cortas (&lt; 30s)</string>
+    <string name="settings_action_rescan">Reescanear Biblioteca Ahora</string>
+    <string name="settings_action_scanning">Escaneando…</string>
+
+    <!-- System: sub-menu list -->
+    <string name="settings_sys_playback_title">Reproducción y Pantalla</string>
+    <string name="settings_sys_playback_desc">Mantener la pantalla encendida durante la reproducción</string>
+    <string name="settings_sys_sleep_timer_title">Temporizador de Apagado</string>
+    <string name="settings_sys_sleep_timer_desc">Detener la reproducción automáticamente</string>
+    <string name="settings_sys_notifications_title">Notificaciones</string>
+    <string name="settings_sys_notifications_desc">Controles de la barra de estado y pantalla de bloqueo</string>
+    <string name="settings_sys_language_title">Idioma</string>
+    <string name="settings_sys_language_desc">Idioma de la aplicación</string>
+    <string name="settings_sys_about_title">Acerca de</string>
+    <string name="settings_sys_about_desc">Versión, registro de cambios</string>
+    <string name="settings_back">Atrás</string>
+
+    <!-- System > Playback & Screen -->
+    <string name="settings_label_keep_screen_awake">Mantener Pantalla Encendida Durante la Reproducción</string>
+
+    <!-- System > Sleep Timer -->
+    <string name="settings_label_stop_after">Detener Reproducción Después de</string>
+    <string name="settings_label_stop_after_track">Detener Después de la Pista Actual</string>
+    <string name="settings_label_sleep_timer_status">Temporizador de Apagado</string>
+    <string name="settings_value_stops_in">Se detiene en %1$s</string>
+    <string name="settings_value_stopping_after_track">Se detendrá después de esta pista</string>
+    <string name="settings_action_cancel_sleep_timer">Cancelar Temporizador de Apagado</string>
+    <string name="settings_slider_off">Desactivado</string>
+
+    <!-- System > Notifications -->
+    <string name="settings_action_open_notification_settings">Abrir Ajustes de Notificaciones</string>
+
+    <!-- System > Language -->
+    <string name="settings_lang_system">Predeterminado del Sistema</string>
+    <string name="settings_lang_indonesian">Bahasa Indonesia</string>
+    <string name="settings_lang_english">English</string>
+    <string name="settings_lang_spanish">Español</string>
+    <string name="settings_lang_portuguese">Português</string>
+    <string name="settings_lang_french">Français</string>
+    <string name="settings_lang_german">Deutsch</string>
+    <string name="settings_lang_russian">Русский</string>
+    <string name="settings_lang_japanese">日本語</string>
+    <string name="settings_lang_korean">한국어</string>
+    <string name="settings_lang_chinese_simplified">中文（简体）</string>
+    <string name="settings_lang_note">Solo cambia el idioma de visualización de la aplicación, independiente del idioma del sistema de tu teléfono. La aplicación se reiniciará para aplicar el cambio.</string>
+
+    <!-- System > About -->
+    <string name="settings_label_app_version">Versión de la Aplicación</string>
+    <string name="settings_action_view_changelog">Ver Registro de Cambios</string>
+
+    <!-- Backup & Restore -->
+    <string name="settings_section_backup">Todos los Ajustes y Preajustes</string>
+    <string name="settings_action_backup">Hacer Copia de Seguridad</string>
+    <string name="settings_action_restore">Restaurar Todos los Ajustes</string>
+    <string name="settings_backup_restore_note">La copia de seguridad guarda TODO en un archivo .json: todos los interruptores/menús, preajustes de ecualizador personalizados, listas de reproducción, memoria de ecualizador y Replay Gain por canción, URLs de emisoras personalizadas guardadas, y el color de acento del tema -- no solo el preajuste de ecualizador activo como EXPORTAR en la pestaña Ecualizador. Restaurar reemplaza TODO eso con el archivo de copia de seguridad que elijas.</string>
+    <string name="settings_restore_confirm_title">¿Restaurar Todos los Ajustes?</string>
+    <string name="settings_restore_confirm_body">Esto reemplazará TODOS los ajustes y preajustes actuales con el archivo de copia de seguridad que elijas a continuación -- esto no se puede deshacer. Tras una restauración exitosa, la aplicación se reiniciará automáticamente para que todos los ajustes surtan efecto de inmediato.</string>
+    <string name="settings_restore_confirm_button">Elegir Archivo de Copia de Seguridad</string>
+    <string name="settings_cancel">Cancelar</string>
+
+    <!-- Changelog dialog chrome (entry text itself stays Indonesian-only for now) -->
+    <string name="changelog_dialog_title">REGISTRO DE CAMBIOS</string>
+    <string name="changelog_badge_latest">MÁS RECIENTE</string>
+
+
+    <!-- ============================================================
+         LYRICS SCREEN
+         ============================================================ -->
+    <string name="lyrics_header">LETRA</string>
+    <string name="lyrics_no_song_loaded">NINGUNA CANCIÓN CARGADA</string>
+    <string name="lyrics_song_subtitle">%1$s • %2$s</string>
+    <string name="lyrics_empty_no_song">Todavía no se está reproduciendo ninguna canción.</string>
+    <string name="lyrics_loading_embedded">Leyendo letra desde los metadatos de la canción…</string>
+    <string name="lyrics_not_found">Letra no encontrada.\n\nColoca un archivo llamado \"%1$s.lrc\" o \".txt\" en la misma carpeta que esta canción, o agrega una etiqueta \"LYRICS\" directamente en los metadatos del archivo FLAC/OGG, luego abre esta pestaña de nuevo.</string>
+    <string name="lyrics_found_but_empty">Letra encontrada pero está vacía.</string>
+
+
+    <!-- ============================================================
+         IMPORT SCREEN
+         ============================================================ -->
+    <string name="import_header_title">IMPORTAR MÚSICA</string>
+    <string name="import_header_subtitle">Añade música a tu biblioteca de TAPEAMP 32</string>
+    <string name="import_select_folder_title">SELECCIONAR CARPETA DE MÚSICA</string>
+    <string name="import_select_folder_subtitle">Toca para seleccionar una carpeta a escanear</string>
+    <string name="import_folder_only_note">Solo se escaneará la carpeta seleccionada</string>
+    <string name="import_select_files_title">SELECCIONAR ARCHIVOS DE AUDIO</string>
+    <string name="import_select_files_subtitle">Importar archivos de música individuales</string>
+    <string name="import_open">ABRIR</string>
+    <string name="import_scanning">ESCANEANDO ARCHIVOS DE MÚSICA…</string>
+    <string name="import_progress_label">PROGRESO DE IMPORTACIÓN</string>
+    <string name="import_files_count">%1$d ARCHIVOS</string>
+    <string name="import_please_wait">Espera mientras se escanea la carpeta seleccionada.</string>
+    <string name="import_library_available">%1$d archivo(s) de audio disponibles en la biblioteca.</string>
+    <string name="import_no_music_yet">Aún no hay música importada.</string>
+
+
+    <!-- ============================================================
+         NAV RAIL LABELS
+         ============================================================ -->
+    <string name="navrail_player">REPRODUCTOR</string>
+    <string name="navrail_equalizer">ECUALIZADOR</string>
+    <string name="navrail_library">BIBLIOTECA</string>
+    <string name="navrail_import">IMPORTAR</string>
+    <string name="navrail_lyrics">LETRA</string>
+    <string name="navrail_settings">AJUSTES</string>
+
+
+    <!-- ============================================================
+         PLAYER SCREEN
+         ============================================================ -->
+    <string name="player_no_song_loaded">NINGUNA CANCIÓN CARGADA</string>
+    <string name="player_select_song_hint">SELECCIONA UNA CANCIÓN DE LA BIBLIOTECA</string>
+    <string name="player_no_song_banner">NINGUNA CANCIÓN CARGADA  •  ABRE LA BIBLIOTECA O IMPORTA MÚSICA</string>
+    <string name="player_streaming_label">TRANSMISIÓN</string>
+    <string name="player_error_prefix">ERROR  •  %1$s</string>
+    <string name="player_track_format_info">%1$s • 24-BIT / 96kHz</string>
+    <string name="player_badge_hires">HI-RES</string>
+    <string name="player_vfd_sleep_off">DESACTIVADO</string>
+    <string name="player_vfd_sleep_end_of_track">FIN DE PISTA</string>
+
+
+    <!-- ============================================================
+         TRANSPORT CONTROLS (istilah universal audio, sama di kedua bahasa)
+         ============================================================ -->
+    <string name="transport_power">POWER</string>
+    <string name="transport_screen">SCREEN</string>
+    <string name="transport_volume">VOLUME</string>
+    <string name="transport_rew">REW</string>
+    <string name="transport_play">PLAY</string>
+    <string name="transport_pause">PAUSE</string>
+    <string name="transport_stop">STOP</string>
+    <string name="transport_ffwd">F.FWD</string>
+    <string name="transport_shuffle">SHUFFLE</string>
+    <string name="transport_repeat">REPEAT</string>
+
+
+    <!-- ============================================================
+         VU METER (istilah universal audio, sama di kedua bahasa)
+         ============================================================ -->
+    <string name="vu_left">LEFT</string>
+    <string name="vu_right">RIGHT</string>
+    <string name="vu_db_unit">dB</string>
+
+
+    <!-- ============================================================
+         VFD STATUS PANEL (label hardware ala tampilan VFD ampli/deck Hi-Fi
+         klasik; sengaja sama di kedua bahasa, seperti perangkat aslinya)
+         ============================================================ -->
+    <string name="vfd_usb_dac">USB DAC</string>
+    <string name="vfd_internal">INTERNAL</string>
+    <string name="vfd_hires">HI-RES</string>
+    <string name="vfd_builtin">BUILT-IN</string>
+    <string name="vfd_dsp_on">DSP ON</string>
+    <string name="vfd_bypass">BYPASS</string>
+    <string name="vfd_tape_warm">TAPE WARM</string>
+    <string name="vfd_flat">FLAT</string>
+    <string name="vfd_std">STD</string>
+    <string name="vfd_offload">OFFLOAD</string>
+    <string name="vfd_off">OFF</string>
+    <string name="vfd_hardware">HARDWARE</string>
+    <string name="vfd_fallback">FALLBACK</string>
+    <string name="vfd_sleep">SLEEP</string>
+    <string name="vfd_peak">PEAK</string>
+    <string name="vfd_dash_placeholder">--</string>
+
+
+    <!-- ============================================================
+         CASSETTE DECK LABEL (mensimulasikan label cetak kaset fisik asli;
+         sengaja sama di kedua bahasa, seperti kaset fisik sungguhan)
+         ============================================================ -->
+    <string name="cassette_nr_label">NR.</string>
+    <string name="cassette_yes">YES</string>
+    <string name="cassette_no">NO</string>
+    <!-- BARU (patch "cassette side A/B string label") -->
+    <string name="cassette_side_a">A</string>
+    <string name="cassette_side_b">B</string>
+    <string name="cassette_side_a_description">Lado A – Biblioteca</string>
+    <string name="cassette_side_b_description">Lado B – Transmisión</string>
+
+
+    <!-- ============================================================
+         STREAMING SCREEN
+         ============================================================ -->
+    <string name="streaming_custom_stream_default">Stream Personalizado</string>
+    <string name="streaming_favorites_header">FAVORITOS</string>
+    <string name="streaming_no_stations">Aún no hay emisoras.\nAñade una URL abajo.</string>
+    <string name="streaming_add_url_header">AÑADIR URL DE STREAM</string>
+    <string name="streaming_play_url">REPRODUCIR URL</string>
+    <string name="streaming_no_station_selected">Ninguna emisora seleccionada</string>
+    <string name="streaming_icecast_stream">Stream Icecast</string>
+    <string name="streaming_live_badge">EN VIVO</string>
+    <string name="streaming_buffer_label">Búfer</string>
+    <string name="streaming_buffer_value">%1$.1f / 5.0 seg</string>
+    <string name="streaming_label_codec">Códec</string>
+    <string name="streaming_label_bitrate">Tasa de bits</string>
+    <string name="streaming_label_status">Estado</string>
+    <string name="streaming_status_playing">Reproduciendo</string>
+    <string name="streaming_status_stopped">Detenido</string>
+
+
+    <!-- ============================================================
+         LIBRARY SCREEN
+         ============================================================ -->
+    <string name="library_unknown">Desconocido</string>
+    <string name="library_unknown_album">Álbum Desconocido</string>
+    <string name="library_unknown_artist">Artista Desconocido</string>
+    <string name="library_unknown_folder">Carpeta Desconocida</string>
+    <string name="library_unknown_title">Título Desconocido</string>
+    <string name="library_playlist_empty_title">LISTA VACÍA</string>
+    <string name="library_playlist_empty_hint">Añade canciones con el icono \"+\" en la lista de CANCIONES.</string>
+    <string name="library_new_playlist_title">NUEVA LISTA DE REPRODUCCIÓN</string>
+    <string name="library_playlist_name_label">Nombre de la lista</string>
+    <string name="library_create_label">CREAR</string>
+    <string name="library_back_desc">Atrás</string>
+    <string name="library_play_all">REPRODUCIR TODO</string>
+    <string name="library_tab_songs">CANCIONES</string>
+    <string name="library_tab_albums">ÁLBUMES</string>
+    <string name="library_tab_artists">ARTISTAS</string>
+    <string name="library_tab_folders">CARPETAS</string>
+    <string name="library_tab_playlists">LISTAS</string>
+    <string name="library_search_placeholder">Buscar canciones…</string>
+    <string name="library_shuffle_all">ALEATORIO TOTAL</string>
+    <string name="library_songs_count">%1$d Canciones</string>
+    <string name="library_col_title">Título</string>
+    <string name="library_col_artist">Artista</string>
+    <string name="library_col_album">Álbum</string>
+    <string name="library_col_duration">Duración</string>
+    <string name="library_col_format">Formato</string>
+    <string name="library_add_to_playlist_desc">Añadir a la lista</string>
+    <string name="library_remove_from_playlist_desc">Quitar de la lista</string>
+    <string name="library_track_count">%1$d Pista(s)</string>
+    <string name="library_no_songs_found">NO SE ENCONTRARON CANCIONES</string>
+    <string name="library_import_hint">Importa música desde la pestaña IMPORTAR.</string>
+    <string name="library_no_playlists_yet">AÚN NO HAY LISTAS</string>
+    <string name="library_tap_new_playlist_hint">Toca \"NUEVA LISTA\" arriba para crear una.</string>
+    <string name="library_delete_playlist_desc">Eliminar lista</string>
+    <string name="library_cancel">CANCELAR</string>
+    <string name="library_add_to_playlist_title">AÑADIR A LA LISTA</string>
+    <string name="library_no_playlists_inline">Aún no hay listas.</string>
+    <string name="library_create_new_playlist_inline">+ CREAR NUEVA LISTA</string>
+    <string name="library_close">CERRAR</string>
+
+
+    <!-- ============================================================
+         EQUALIZER SCREEN
+         ============================================================ -->
+    <string name="eq_tab_equ">ECU</string>
+    <string name="eq_tab_tone">TONO</string>
+    <string name="eq_tab_vocal">VOZ</string>
+    <string name="eq_tab_stereo">ESTÉREO</string>
+    <string name="eq_tab_limit">LÍMITE</string>
+
+    <string name="eq_graphic_equalizer_header">ECUALIZADOR GRÁFICO</string>
+    <string name="eq_10_band">10 BANDAS</string>
+
+    <string name="eq_vu_level">NIVEL</string>
+    <string name="eq_lr_label">I / D</string>
+
+    <string name="eq_tone_subtitle">PREAMP / GRAVES / AGUDOS</string>
+    <string name="eq_preamp_slider_label">PREAMP</string>
+    <string name="eq_bass_slider_label">GRAVES</string>
+    <string name="eq_treble_slider_label">AGUDOS</string>
+    <string name="eq_tone_description">El Preamp controla la ganancia general antes del ecualizador de 10 bandas. Los deslizadores de Graves/Agudos aquí son un acceso directo a las bandas de 31Hz y 16kHz — usa la pestaña ECU para el control completo de 10 bandas.</string>
+
+    <string name="eq_limit_subtitle">LIMITADOR SUAVE</string>
+    <string name="eq_soft_limiter_label">LIMITADOR SUAVE</string>
+    <string name="eq_soft_limiter_desc">Contiene suavemente los picos de señal (soft-knee, umbral cerca de -0.9 dBFS) para que los grandes aumentos del ecualizador no recorten bruscamente.</string>
+    <string name="eq_bypass_label">OMITIR EQ</string>
+    <string name="eq_bypass_desc">Desactiva temporalmente todo el procesamiento del ecualizador de 10 bandas (el preamp y las bandas permanecen guardados — actívalo de nuevo cuando quieras).</string>
+    <string name="eq_bitperfect_label">MODO BIT-PERFECTO</string>
+    <string name="eq_bitperfect_desc">Omite TODO el procesamiento de señal por software (EQ, Voz, Balance, Expansión Estéreo, Mono, Limitador) Y solicita una ruta de AUDIO OFFLOAD por hardware al dispositivo/DAC USB conectado. Las demás posiciones no cambian, solo quedan temporalmente congeladas. El soporte de offload depende del dispositivo y del formato de la canción — si no es compatible, vuelve automáticamente al bypass por software (sigue siendo totalmente funcional).</string>
+    <string name="eq_autoeq_label">AUTO EQ POR CANCIÓN</string>
+    <string name="eq_autoeq_desc">Recuerda el preajuste de ecualizador elegido para cada canción y lo vuelve a aplicar automáticamente la próxima vez que se reproduzca — sin necesidad de cambiar de preajuste manualmente cada vez.</string>
+    <string name="eq_replaygain_label">REPLAY GAIN</string>
+    <string name="eq_replaygain_desc">Mide y equipara automáticamente el volumen entre canciones — una canción que aún no se ha medido se mide mientras la escuchas, y luego se recuerda la ganancia para la próxima vez. Se desactiva automáticamente mientras el MODO BIT-PERFECTO está activado.</string>
+    <string name="eq_crossfade_label">CROSSFADE</string>
+    <string name="eq_crossfade_desc">Superpone el desvanecimiento de salida de la canción actual con el de entrada de la siguiente en los cambios automáticos de pista — diferente de GAPLESS, que solo elimina el silencio sin superposición.</string>
+
+    <string name="eq_delete_short">ELIMINAR</string>
+    <string name="eq_song_preset_saved">Esta canción: preajuste “%1$s” guardado</string>
+    <string name="eq_song_no_preset">Esta canción aún no tiene un preajuste guardado — elige uno arriba</string>
+    <string name="eq_song_replaygain_saved">Esta canción: %1$s dB guardados</string>
+    <string name="eq_song_replaygain_measuring">Esta canción aún no se ha medido — midiendo mientras se reproduce</string>
+    <string name="eq_crossfade_duration_label">Duración de la superposición:</string>
+    <string name="eq_crossfade_seconds_unit">%1$dS</string>
+    <string name="eq_offload_active">OFFLOAD por hardware ACTIVO — esta canción realmente usa la ruta directa al DAC.</string>
+    <string name="eq_offload_inactive">OFFLOAD no activo para esta canción — volviendo automáticamente al bypass por software (sigue siendo bit-perfecto).</string>
+    <string name="eq_rocker_off">APAGADO</string>
+    <string name="eq_rocker_on">ENCENDIDO</string>
+
+    <string name="eq_vocal_subtitle">GRAVES / AGUDOS DE VOZ</string>
+    <string name="eq_vocal_toggle_desc">Activa el realce de voz — dos filtros dedicados (cuerpo ~200Hz y claridad ~4.5kHz) independientes del ecualizador de 10 bandas de la pestaña ECU, para que la voz resalte sin cambiar el preajuste activo.</string>
+    <string name="eq_vocal_bass_knob">GRAVES DE VOZ</string>
+    <string name="eq_vocal_treble_knob">AGUDOS DE VOZ</string>
+    <string name="eq_vocal_description">GRAVES DE VOZ añade calidez vocal (~200Hz), AGUDOS DE VOZ añade claridad/articulación (~4.5kHz) — ambos independientes de GRAVES/AGUDOS en la pestaña TONO.</string>
+
+    <string name="eq_stereo_subtitle">BALANCE / EXPANSIÓN / MONO</string>
+    <string name="eq_balance_knob">BALANCE</string>
+    <string name="eq_stereo_expansion_knob">EXPANSIÓN ESTÉREO</string>
+    <string name="eq_mono_stereo_label">MONO / ESTÉREO</string>
+    <string name="eq_mono_stereo_desc">Cuando está ACTIVADO, los canales izquierdo y derecho se combinan en mono (L+R idéntico en ambos canales) — siempre anula la Expansión Estéreo. Cuando está DESACTIVADO, se usa la imagen estéreo original o el resultado de la Expansión Estéreo.</string>
+    <string name="eq_stereo_description">BALANCE desplaza el volumen relativo entre izquierda y derecha. EXPANSIÓN ESTÉREO amplía (&gt;100%%) o estrecha (&lt;100%%) la imagen estéreo mediante procesamiento Mid/Side, 0%% equivale a mono total.</string>
+
+    <string name="eq_save_dialog_title">GUARDAR PREAJUSTE DE EQ</string>
+    <string name="eq_preset_name_label">Nombre del preajuste</string>
+    <string name="eq_save_button">GUARDAR</string>
+    <string name="eq_cancel_button">CANCELAR</string>
+    <string name="eq_delete_preset_title">¿ELIMINAR PREAJUSTE?</string>
+    <string name="eq_delete_preset_body">El preajuste personalizado “%1$s” se eliminará permanentemente y no se podrá restaurar. Los preajustes integrados (Plano/Rock/Pop/Jazz/etc.) no se ven afectados.</string>
+    <string name="eq_delete_button">ELIMINAR</string>
+
+    <string name="eq_header_title">ECUALIZADOR</string>
+    <string name="eq_header_preset_label">PREAJUSTE</string>
+    <string name="eq_delete_preset_desc">Eliminar preajuste %1$s</string>
+    <string name="eq_upload_action">SUBIR</string>
+    <string name="eq_export_action">EXPORTAR</string>
+
+
+    <!-- Backup & Restore result toasts (audit fix: previously hardcoded in MainActivity.kt) -->
+    <string name="toast_backup_success">Copia de seguridad de los ajustes realizada con éxito.</string>
+    <string name="toast_backup_failed">Copia de seguridad fallida: %1$s</string>
+    <string name="toast_backup_file_unreadable">No se pudo leer el archivo de copia de seguridad.</string>
+    <string name="toast_restore_success">Ajustes restaurados con éxito. La aplicación se reiniciará automáticamente...</string>
+    <string name="toast_restore_failed">Restauración fallida: este no es un archivo de copia de seguridad válido de TapeAmp 32.</string>
+
+    <string name="streaming_delete_station">Eliminar emisora</string>
+    <string name="streaming_edit_station">Editar emisora</string>
+    <string name="streaming_edit_dialog_title">Editar emisora</string>
+    <string name="streaming_edit_dialog_name_label">Nombre de la emisora</string>
+    <string name="streaming_edit_dialog_url_label">URL del stream</string>
+    <string name="streaming_edit_save">GUARDAR</string>
+    <string name="streaming_edit_cancel">CANCELAR</string>
+</resources>

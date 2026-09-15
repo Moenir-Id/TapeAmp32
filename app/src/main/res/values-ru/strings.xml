@@ -1,0 +1,387 @@
+<resources>
+    <!-- App Name -->
+    <string name="app_name">TapeAmp 32</string>
+
+    <!-- Navigation Rail Labels -->
+
+    <!-- Playback Service Notification -->
+    <string name="notification_channel_name">Воспроизведение TapeAmp 32</string>
+    <string name="notification_channel_description">Показывает элементы управления Hi-Fi-плеера TapeAmp 32</string>
+
+    <!-- Home Screen Widget -->
+    <string name="widget_prev_desc">Предыдущий трек</string>
+    <string name="widget_play_pause_desc">Воспроизведение/Пауза</string>
+    <string name="widget_next_desc">Следующий трек</string>
+    <string name="widget_description">Управление TapeAmp 32 с главного экрана</string>
+    <string name="widget_no_song">-- Ничего не воспроизводится --</string>
+    <string name="widget_reel_desc">Вращающаяся катушка кассеты</string>
+
+    <!-- Android Auto -->
+    <string name="android_auto_all_songs">Все песни</string>
+
+    <!-- ============================================================
+         SETTINGS SCREEN: multi-language (ID/EN)
+         ============================================================ -->
+
+    <!-- Sidebar categories -->
+    <string name="settings_cat_streaming_label">СТРИМИНГ И СЕТЬ</string>
+    <string name="settings_cat_streaming_title">Стриминг и Сеть</string>
+    <string name="settings_cat_ui_label">ИНТЕРФЕЙС И ВНЕШНИЙ ВИД</string>
+    <string name="settings_cat_ui_title">Интерфейс и Внешний вид</string>
+    <string name="settings_cat_library_label">БИБЛИОТЕКА</string>
+    <string name="settings_cat_library_title">Библиотека</string>
+    <string name="settings_cat_system_label">СИСТЕМА</string>
+    <string name="settings_cat_system_title">Система</string>
+    <string name="settings_cat_backup_label">РЕЗЕРВНОЕ КОПИРОВАНИЕ И ВОССТАНОВЛЕНИЕ</string>
+    <string name="settings_cat_backup_title">Резервное копирование и Восстановление</string>
+
+    <!-- Streaming & Network -->
+    <string name="settings_section_streaming_network">Стриминг и Сеть</string>
+    <string name="settings_label_status">Статус</string>
+    <string name="settings_value_open_streaming">Открыть Стриминг</string>
+    <string name="settings_label_buffer">Буфер</string>
+    <string name="settings_value_buffer_amount">3,2 сек</string>
+    <string name="settings_label_connection">Соединение</string>
+    <string name="settings_value_icecast">Icecast</string>
+    <string name="settings_action_open_streaming">Открыть Стриминг</string>
+
+    <!-- UI & Appearance -->
+    <string name="settings_label_theme_accent">Акцентный цвет темы</string>
+    <string name="settings_label_compact_vu">Показывать VU-метр в компактном режиме</string>
+    <string name="settings_label_reel_animation">Включить анимацию вращения катушек</string>
+
+    <!-- Library -->
+    <string name="settings_label_auto_scan">Автосканирование указанной папки при запуске</string>
+    <string name="settings_label_ignore_short">Игнорировать короткие треки (&lt; 30с)</string>
+    <string name="settings_action_rescan">Пересканировать библиотеку сейчас</string>
+    <string name="settings_action_scanning">Сканирование…</string>
+
+    <!-- System: sub-menu list -->
+    <string name="settings_sys_playback_title">Воспроизведение и экран</string>
+    <string name="settings_sys_playback_desc">Не гасить экран во время воспроизведения</string>
+    <string name="settings_sys_sleep_timer_title">Таймер сна</string>
+    <string name="settings_sys_sleep_timer_desc">Останавливать воспроизведение автоматически</string>
+    <string name="settings_sys_notifications_title">Уведомления</string>
+    <string name="settings_sys_notifications_desc">Элементы управления в строке состояния и на экране блокировки</string>
+    <string name="settings_sys_language_title">Язык</string>
+    <string name="settings_sys_language_desc">Язык интерфейса приложения</string>
+    <string name="settings_sys_about_title">О приложении</string>
+    <string name="settings_sys_about_desc">Версия, журнал изменений</string>
+    <string name="settings_back">Назад</string>
+
+    <!-- System > Playback & Screen -->
+    <string name="settings_label_keep_screen_awake">Не гасить экран во время воспроизведения</string>
+
+    <!-- System > Sleep Timer -->
+    <string name="settings_label_stop_after">Остановить воспроизведение через</string>
+    <string name="settings_label_stop_after_track">Остановить после текущего трека</string>
+    <string name="settings_label_sleep_timer_status">Таймер сна</string>
+    <string name="settings_value_stops_in">Остановка через %1$s</string>
+    <string name="settings_value_stopping_after_track">Остановится после этого трека</string>
+    <string name="settings_action_cancel_sleep_timer">Отменить таймер сна</string>
+    <string name="settings_slider_off">Выкл.</string>
+
+    <!-- System > Notifications -->
+    <string name="settings_action_open_notification_settings">Открыть настройки уведомлений</string>
+
+    <!-- System > Language -->
+    <string name="settings_lang_system">Системный по умолчанию</string>
+    <string name="settings_lang_indonesian">Bahasa Indonesia</string>
+    <string name="settings_lang_english">English</string>
+    <string name="settings_lang_spanish">Español</string>
+    <string name="settings_lang_portuguese">Português</string>
+    <string name="settings_lang_french">Français</string>
+    <string name="settings_lang_german">Deutsch</string>
+    <string name="settings_lang_russian">Русский</string>
+    <string name="settings_lang_japanese">日本語</string>
+    <string name="settings_lang_korean">한국어</string>
+    <string name="settings_lang_chinese_simplified">中文（简体）</string>
+    <string name="settings_lang_note">Изменяет только язык интерфейса приложения, независимо от системного языка телефона. Приложение перезапустится, чтобы применить изменение.</string>
+
+    <!-- System > About -->
+    <string name="settings_label_app_version">Версия приложения</string>
+    <string name="settings_action_view_changelog">Показать журнал изменений</string>
+
+    <!-- Backup & Restore -->
+    <string name="settings_section_backup">Все настройки и пресеты</string>
+    <string name="settings_action_backup">Создать резервную копию всех настроек</string>
+    <string name="settings_action_restore">Восстановить все настройки</string>
+    <string name="settings_backup_restore_note">Резервная копия сохраняет ВСЁ в один .json-файл: все переключатели/выпадающие списки, пользовательские пресеты эквалайзера, плейлисты, память эквалайзера и Replay Gain для каждой песни, сохранённые пользовательские URL потоков, а также акцентный цвет темы -- а не только активный пресет эквалайзера, как ЭКСПОРТ на вкладке Эквалайзер. Восстановление заменяет ВСЁ это выбранным файлом резервной копии.</string>
+    <string name="settings_restore_confirm_title">Восстановить все настройки?</string>
+    <string name="settings_restore_confirm_body">Это заменит ВСЕ текущие настройки и пресеты выбранным далее файлом резервной копии -- это действие нельзя отменить. После успешного восстановления приложение автоматически перезапустится, чтобы все настройки вступили в силу немедленно.</string>
+    <string name="settings_restore_confirm_button">Выбрать файл резервной копии</string>
+    <string name="settings_cancel">Отмена</string>
+
+    <!-- Changelog dialog chrome (entry text itself stays Indonesian-only for now) -->
+    <string name="changelog_dialog_title">ЖУРНАЛ ИЗМЕНЕНИЙ</string>
+    <string name="changelog_badge_latest">НОВОЕ</string>
+
+
+    <!-- ============================================================
+         LYRICS SCREEN
+         ============================================================ -->
+    <string name="lyrics_header">ТЕКСТ ПЕСНИ</string>
+    <string name="lyrics_no_song_loaded">ПЕСНЯ НЕ ЗАГРУЖЕНА</string>
+    <string name="lyrics_song_subtitle">%1$s • %2$s</string>
+    <string name="lyrics_empty_no_song">Пока ничего не воспроизводится.</string>
+    <string name="lyrics_loading_embedded">Чтение текста из метаданных песни…</string>
+    <string name="lyrics_not_found">Текст песни не найден.\n\nПоместите файл с именем \"%1$s.lrc\" или \".txt\" в ту же папку, что и эта песня, либо добавьте тег \"LYRICS\" прямо в метаданные файла FLAC/OGG, затем откройте эту вкладку снова.</string>
+    <string name="lyrics_found_but_empty">Текст найден, но он пуст.</string>
+
+
+    <!-- ============================================================
+         IMPORT SCREEN
+         ============================================================ -->
+    <string name="import_header_title">ИМПОРТ МУЗЫКИ</string>
+    <string name="import_header_subtitle">Добавьте музыку в вашу библиотеку TAPEAMP 32</string>
+    <string name="import_select_folder_title">ВЫБРАТЬ ПАПКУ С МУЗЫКОЙ</string>
+    <string name="import_select_folder_subtitle">Нажмите, чтобы выбрать папку для сканирования</string>
+    <string name="import_folder_only_note">Будет просканирована только выбранная папка</string>
+    <string name="import_select_files_title">ВЫБРАТЬ АУДИОФАЙЛЫ</string>
+    <string name="import_select_files_subtitle">Импортировать отдельные музыкальные файлы</string>
+    <string name="import_open">ОТКРЫТЬ</string>
+    <string name="import_scanning">СКАНИРОВАНИЕ МУЗЫКАЛЬНЫХ ФАЙЛОВ…</string>
+    <string name="import_progress_label">ПРОГРЕСС ИМПОРТА</string>
+    <string name="import_files_count">%1$d ФАЙЛОВ</string>
+    <string name="import_please_wait">Пожалуйста, подождите, пока выбранная папка сканируется.</string>
+    <string name="import_library_available">%1$d аудиофайл(ов) доступно в библиотеке.</string>
+    <string name="import_no_music_yet">Музыка ещё не импортирована.</string>
+
+
+    <!-- ============================================================
+         NAV RAIL LABELS
+         ============================================================ -->
+    <string name="navrail_player">ПЛЕЕР</string>
+    <string name="navrail_equalizer">ЭКВАЛАЙЗЕР</string>
+    <string name="navrail_library">БИБЛИОТЕКА</string>
+    <string name="navrail_import">ИМПОРТ</string>
+    <string name="navrail_lyrics">ТЕКСТ ПЕСНИ</string>
+    <string name="navrail_settings">НАСТРОЙКИ</string>
+
+
+    <!-- ============================================================
+         PLAYER SCREEN
+         ============================================================ -->
+    <string name="player_no_song_loaded">ПЕСНЯ НЕ ЗАГРУЖЕНА</string>
+    <string name="player_select_song_hint">ВЫБЕРИТЕ ПЕСНЮ ИЗ БИБЛИОТЕКИ</string>
+    <string name="player_no_song_banner">ПЕСНЯ НЕ ЗАГРУЖЕНА  •  ОТКРОЙТЕ БИБЛИОТЕКУ ИЛИ ИМПОРТИРУЙТЕ МУЗЫКУ</string>
+    <string name="player_streaming_label">ТРАНСЛЯЦИЯ</string>
+    <string name="player_error_prefix">ОШИБКА  •  %1$s</string>
+    <string name="player_track_format_info">%1$s • 24-BIT / 96kHz</string>
+    <string name="player_badge_hires">HI-RES</string>
+    <string name="player_vfd_sleep_off">ВЫКЛ.</string>
+    <string name="player_vfd_sleep_end_of_track">КОНЕЦ ТРЕКА</string>
+
+
+    <!-- ============================================================
+         TRANSPORT CONTROLS (istilah universal audio, sama di kedua bahasa)
+         ============================================================ -->
+    <string name="transport_power">POWER</string>
+    <string name="transport_screen">SCREEN</string>
+    <string name="transport_volume">VOLUME</string>
+    <string name="transport_rew">REW</string>
+    <string name="transport_play">PLAY</string>
+    <string name="transport_pause">PAUSE</string>
+    <string name="transport_stop">STOP</string>
+    <string name="transport_ffwd">F.FWD</string>
+    <string name="transport_shuffle">SHUFFLE</string>
+    <string name="transport_repeat">REPEAT</string>
+
+
+    <!-- ============================================================
+         VU METER (istilah universal audio, sama di kedua bahasa)
+         ============================================================ -->
+    <string name="vu_left">LEFT</string>
+    <string name="vu_right">RIGHT</string>
+    <string name="vu_db_unit">dB</string>
+
+
+    <!-- ============================================================
+         VFD STATUS PANEL (label hardware ala tampilan VFD ampli/deck Hi-Fi
+         klasik; sengaja sama di kedua bahasa, seperti perangkat aslinya)
+         ============================================================ -->
+    <string name="vfd_usb_dac">USB DAC</string>
+    <string name="vfd_internal">INTERNAL</string>
+    <string name="vfd_hires">HI-RES</string>
+    <string name="vfd_builtin">BUILT-IN</string>
+    <string name="vfd_dsp_on">DSP ON</string>
+    <string name="vfd_bypass">BYPASS</string>
+    <string name="vfd_tape_warm">TAPE WARM</string>
+    <string name="vfd_flat">FLAT</string>
+    <string name="vfd_std">STD</string>
+    <string name="vfd_offload">OFFLOAD</string>
+    <string name="vfd_off">OFF</string>
+    <string name="vfd_hardware">HARDWARE</string>
+    <string name="vfd_fallback">FALLBACK</string>
+    <string name="vfd_sleep">SLEEP</string>
+    <string name="vfd_peak">PEAK</string>
+    <string name="vfd_dash_placeholder">--</string>
+
+
+    <!-- ============================================================
+         CASSETTE DECK LABEL (mensimulasikan label cetak kaset fisik asli;
+         sengaja sama di kedua bahasa, seperti kaset fisik sungguhan)
+         ============================================================ -->
+    <string name="cassette_nr_label">NR.</string>
+    <string name="cassette_yes">YES</string>
+    <string name="cassette_no">NO</string>
+    <!-- BARU (patch "cassette side A/B string label") -->
+    <string name="cassette_side_a">A</string>
+    <string name="cassette_side_b">B</string>
+    <string name="cassette_side_a_description">Сторона A – Библиотека</string>
+    <string name="cassette_side_b_description">Сторона B – Трансляция</string>
+
+
+    <!-- ============================================================
+         STREAMING SCREEN
+         ============================================================ -->
+    <string name="streaming_custom_stream_default">Пользовательский поток</string>
+    <string name="streaming_favorites_header">ИЗБРАННОЕ</string>
+    <string name="streaming_no_stations">Станций пока нет.\nДобавьте URL ниже.</string>
+    <string name="streaming_add_url_header">ДОБАВИТЬ URL ПОТОКА</string>
+    <string name="streaming_play_url">ВОСПРОИЗВЕСТИ URL</string>
+    <string name="streaming_no_station_selected">Станция не выбрана</string>
+    <string name="streaming_icecast_stream">Поток Icecast</string>
+    <string name="streaming_live_badge">В ЭФИРЕ</string>
+    <string name="streaming_buffer_label">Буфер</string>
+    <string name="streaming_buffer_value">%1$.1f / 5.0 сек</string>
+    <string name="streaming_label_codec">Кодек</string>
+    <string name="streaming_label_bitrate">Битрейт</string>
+    <string name="streaming_label_status">Статус</string>
+    <string name="streaming_status_playing">Воспроизведение</string>
+    <string name="streaming_status_stopped">Остановлено</string>
+
+
+    <!-- ============================================================
+         LIBRARY SCREEN
+         ============================================================ -->
+    <string name="library_unknown">Неизвестно</string>
+    <string name="library_unknown_album">Неизвестный альбом</string>
+    <string name="library_unknown_artist">Неизвестный исполнитель</string>
+    <string name="library_unknown_folder">Неизвестная папка</string>
+    <string name="library_unknown_title">Неизвестное название</string>
+    <string name="library_playlist_empty_title">ПУСТОЙ ПЛЕЙЛИСТ</string>
+    <string name="library_playlist_empty_hint">Добавьте песни через значок \"+\" в списке ПЕСНИ.</string>
+    <string name="library_new_playlist_title">НОВЫЙ ПЛЕЙЛИСТ</string>
+    <string name="library_playlist_name_label">Название плейлиста</string>
+    <string name="library_create_label">СОЗДАТЬ</string>
+    <string name="library_back_desc">Назад</string>
+    <string name="library_play_all">ВОСПРОИЗВЕСТИ ВСЁ</string>
+    <string name="library_tab_songs">ПЕСНИ</string>
+    <string name="library_tab_albums">АЛЬБОМЫ</string>
+    <string name="library_tab_artists">ИСПОЛНИТЕЛИ</string>
+    <string name="library_tab_folders">ПАПКИ</string>
+    <string name="library_tab_playlists">ПЛЕЙЛИСТЫ</string>
+    <string name="library_search_placeholder">Поиск песен…</string>
+    <string name="library_shuffle_all">ПЕРЕМЕШАТЬ ВСЁ</string>
+    <string name="library_songs_count">%1$d Песен</string>
+    <string name="library_col_title">Название</string>
+    <string name="library_col_artist">Исполнитель</string>
+    <string name="library_col_album">Альбом</string>
+    <string name="library_col_duration">Длительность</string>
+    <string name="library_col_format">Формат</string>
+    <string name="library_add_to_playlist_desc">Добавить в плейлист</string>
+    <string name="library_remove_from_playlist_desc">Удалить из плейлиста</string>
+    <string name="library_track_count">%1$d Трек(ов)</string>
+    <string name="library_no_songs_found">ПЕСНИ НЕ НАЙДЕНЫ</string>
+    <string name="library_import_hint">Импортируйте музыку на вкладке ИМПОРТ.</string>
+    <string name="library_no_playlists_yet">ПЛЕЙЛИСТОВ ПОКА НЕТ</string>
+    <string name="library_tap_new_playlist_hint">Нажмите \"НОВЫЙ ПЛЕЙЛИСТ\" выше, чтобы создать его.</string>
+    <string name="library_delete_playlist_desc">Удалить плейлист</string>
+    <string name="library_cancel">ОТМЕНА</string>
+    <string name="library_add_to_playlist_title">ДОБАВИТЬ В ПЛЕЙЛИСТ</string>
+    <string name="library_no_playlists_inline">Плейлистов пока нет.</string>
+    <string name="library_create_new_playlist_inline">+ СОЗДАТЬ НОВЫЙ ПЛЕЙЛИСТ</string>
+    <string name="library_close">ЗАКРЫТЬ</string>
+
+
+    <!-- ============================================================
+         EQUALIZER SCREEN
+         ============================================================ -->
+    <string name="eq_tab_equ">ЭКВ</string>
+    <string name="eq_tab_tone">ТОН</string>
+    <string name="eq_tab_vocal">ВОКАЛ</string>
+    <string name="eq_tab_stereo">СТЕРЕО</string>
+    <string name="eq_tab_limit">ЛИМИТ</string>
+
+    <string name="eq_graphic_equalizer_header">ГРАФИЧЕСКИЙ ЭКВАЛАЙЗЕР</string>
+    <string name="eq_10_band">10 ПОЛОС</string>
+
+    <string name="eq_vu_level">УРОВЕНЬ</string>
+    <string name="eq_lr_label">Л / П</string>
+
+    <string name="eq_tone_subtitle">ПРЕДУСИЛИТЕЛЬ / НЧ / ВЧ</string>
+    <string name="eq_preamp_slider_label">ПРЕДУСИЛ.</string>
+    <string name="eq_bass_slider_label">НЧ</string>
+    <string name="eq_treble_slider_label">ВЧ</string>
+    <string name="eq_tone_description">Предусилитель управляет общим усилением перед 10-полосным эквалайзером. Ползунки НЧ/ВЧ здесь — это быстрый доступ к полосам 31Гц и 16кГц — используйте вкладку ЭКВ для полного управления 10 полосами.</string>
+
+    <string name="eq_limit_subtitle">МЯГКИЙ ЛИМИТЕР</string>
+    <string name="eq_soft_limiter_label">МЯГКИЙ ЛИМИТЕР</string>
+    <string name="eq_soft_limiter_desc">Плавно сдерживает пики сигнала (мягкое колено, порог около -0,9 dBFS), чтобы сильные подъёмы эквалайзера не приводили к жёсткому клиппингу.</string>
+    <string name="eq_bypass_label">ОБХОД ЭКВАЛАЙЗЕРА</string>
+    <string name="eq_bypass_desc">Временно отключает всю обработку 10-полосного эквалайзера (предусилитель и полосы остаются сохранёнными — включите снова в любой момент).</string>
+    <string name="eq_bitperfect_label">РЕЖИМ BIT-PERFECT</string>
+    <string name="eq_bitperfect_desc">Пропускает ВСЮ программную обработку сигнала (EQ, вокал, баланс, стерео-расширение, моно, лимитер) И запрашивает аппаратный путь AUDIO OFFLOAD к подключённому устройству/USB ЦАП. Положения остальных регуляторов не меняются, а лишь временно замораживаются. Поддержка offload зависит от устройства и формата песни — если не поддерживается, автоматически используется программный обход (по-прежнему полностью функционален).</string>
+    <string name="eq_autoeq_label">АВТО EQ ДЛЯ КАЖДОЙ ПЕСНИ</string>
+    <string name="eq_autoeq_desc">Запоминает выбранный для каждой песни пресет эквалайзера и автоматически применяет его при следующем воспроизведении — больше не нужно вручную переключать пресеты каждый раз.</string>
+    <string name="eq_replaygain_label">REPLAY GAIN</string>
+    <string name="eq_replaygain_desc">Автоматически измеряет и выравнивает громкость между песнями — ещё не измеренная песня измеряется во время прослушивания, затем усиление запоминается на будущее. Автоматически отключается при включённом РЕЖИМЕ BIT-PERFECT.</string>
+    <string name="eq_crossfade_label">КРОССФЕЙД</string>
+    <string name="eq_crossfade_desc">Накладывает затухание текущей песни на нарастание следующей при автоматической смене трека — в отличие от GAPLESS, который просто убирает тишину без наложения.</string>
+
+    <string name="eq_delete_short">УДАЛИТЬ</string>
+    <string name="eq_song_preset_saved">Эта песня: пресет «%1$s» сохранён</string>
+    <string name="eq_song_no_preset">У этой песни ещё нет сохранённого пресета — выберите его выше</string>
+    <string name="eq_song_replaygain_saved">Эта песня: сохранено %1$s дБ</string>
+    <string name="eq_song_replaygain_measuring">Эта песня ещё не измерена — измерение выполняется во время воспроизведения</string>
+    <string name="eq_crossfade_duration_label">Длительность наложения:</string>
+    <string name="eq_crossfade_seconds_unit">%1$dС</string>
+    <string name="eq_offload_active">Аппаратный OFFLOAD АКТИВЕН — эта песня действительно использует прямой путь к ЦАП.</string>
+    <string name="eq_offload_inactive">OFFLOAD не активен для этой песни — автоматический переход на программный обход (по-прежнему bit-perfect).</string>
+    <string name="eq_rocker_off">ВЫКЛ.</string>
+    <string name="eq_rocker_on">ВКЛ.</string>
+
+    <string name="eq_vocal_subtitle">ВОКАЛ НЧ / ВЧ</string>
+    <string name="eq_vocal_toggle_desc">Включает улучшение вокала — два выделенных фильтра (тело звука ~200Гц и чёткость ~4,5кГц), независимых от 10-полосного эквалайзера на вкладке ЭКВ, чтобы вокал выделялся без изменения активного пресета.</string>
+    <string name="eq_vocal_bass_knob">ВОКАЛ НЧ</string>
+    <string name="eq_vocal_treble_knob">ВОКАЛ ВЧ</string>
+    <string name="eq_vocal_description">ВОКАЛ НЧ добавляет вокальную теплоту (~200Гц), ВОКАЛ ВЧ добавляет чёткость/артикуляцию (~4,5кГц) — оба независимы от НЧ/ВЧ на вкладке ТОН.</string>
+
+    <string name="eq_stereo_subtitle">БАЛАНС / РАСШИРЕНИЕ / МОНО</string>
+    <string name="eq_balance_knob">БАЛАНС</string>
+    <string name="eq_stereo_expansion_knob">СТЕРЕО-РАСШИРЕНИЕ</string>
+    <string name="eq_mono_stereo_label">МОНО / СТЕРЕО</string>
+    <string name="eq_mono_stereo_desc">Когда ВКЛ, левый и правый каналы объединяются в моно (идентичный Л+П на обоих каналах) — всегда отменяет стерео-расширение. Когда ВЫКЛ, используется исходная стереокартина или результат стерео-расширения.</string>
+    <string name="eq_stereo_description">БАЛАНС смещает относительную громкость влево/вправо. СТЕРЕО-РАСШИРЕНИЕ расширяет (&gt;100%%) или сужает (&lt;100%%) стереокартину через обработку Mid/Side, 0%% соответствует полному моно.</string>
+
+    <string name="eq_save_dialog_title">СОХРАНИТЬ ПРЕСЕТ EQ</string>
+    <string name="eq_preset_name_label">Название пресета</string>
+    <string name="eq_save_button">СОХРАНИТЬ</string>
+    <string name="eq_cancel_button">ОТМЕНА</string>
+    <string name="eq_delete_preset_title">УДАЛИТЬ ПРЕСЕТ?</string>
+    <string name="eq_delete_preset_body">Пользовательский пресет «%1$s» будет удалён без возможности восстановления. Встроенные пресеты (Flat/Rock/Pop/Jazz и др.) не затрагиваются.</string>
+    <string name="eq_delete_button">УДАЛИТЬ</string>
+
+    <string name="eq_header_title">ЭКВАЛАЙЗЕР</string>
+    <string name="eq_header_preset_label">ПРЕСЕТ</string>
+    <string name="eq_delete_preset_desc">Удалить пресет %1$s</string>
+    <string name="eq_upload_action">ЗАГРУЗИТЬ</string>
+    <string name="eq_export_action">ЭКСПОРТ</string>
+
+
+    <!-- Backup & Restore result toasts (audit fix: previously hardcoded in MainActivity.kt) -->
+    <string name="toast_backup_success">Настройки успешно сохранены в резервную копию.</string>
+    <string name="toast_backup_failed">Ошибка резервного копирования: %1$s</string>
+    <string name="toast_backup_file_unreadable">Не удалось прочитать файл резервной копии.</string>
+    <string name="toast_restore_success">Настройки успешно восстановлены. Приложение автоматически перезапустится...</string>
+    <string name="toast_restore_failed">Ошибка восстановления: это не действительный файл резервной копии TapeAmp 32.</string>
+
+    <string name="streaming_delete_station">Удалить станцию</string>
+    <string name="streaming_edit_station">Изменить станцию</string>
+    <string name="streaming_edit_dialog_title">Изменить станцию</string>
+    <string name="streaming_edit_dialog_name_label">Название станции</string>
+    <string name="streaming_edit_dialog_url_label">URL потока</string>
+    <string name="streaming_edit_save">СОХРАНИТЬ</string>
+    <string name="streaming_edit_cancel">ОТМЕНА</string>
+</resources>

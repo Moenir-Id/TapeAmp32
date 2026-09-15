@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+        BARU (v2.3, Widget Home Screen): RemoteViews (dipakai widget home screen)
+        tidak bisa membaca ThemeAccentState Compose yang dinamis (lihat
+        ui/theme/Color.kt) - jadi warnanya di-hardcode ke preset default
+        "Gold Retro" di sini, khusus dipakai widget saja.
+    -->
+    <color name="widget_bg">#FF15130E</color>
+    <color name="widget_gold">#FFF2C94C</color>
+    <color name="widget_text_muted">#FF9C927A</color>
+</resources>

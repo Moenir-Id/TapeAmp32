@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.TapeAmp32"
+        android:usesCleartextTraffic="true">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:screenOrientation="userLandscape"
+            android:resizeableActivity="true"
+            android:supportsPictureInPicture="false"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden"
+            android:theme="@style/Theme.TapeAmp32.Splash">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <!-- BARU (bug "app tidak muncul di 'buka dengan' saat tap file lagu di
+                 file manager/app downloader lain"): sebelumnya MainActivity CUMA
+                 punya intent-filter MAIN/LAUNCHER (buat ikon di home screen), jadi
+                 Android tidak pernah tahu app ini SANGGUP membuka file audio dari
+                 luar - makanya tidak pernah muncul di dialog pilihan "Buka
+                 dengan". Dua intent-filter di bawah ini yang bikin Android
+                 menawarkan TapeAmp32 sebagai pilihan:
+                 1) VIEW + mimeType audio/* - untuk file yang sudah dikenali
+                    sistem sebagai audio (skema content:// dari file manager,
+                    aplikasi downloader, dsb).
+                 2) VIEW + skema file:// dengan pathPattern berakhiran ekstensi
+                    audio yang didukung app ini - untuk kasus file lokal yang
+                    dibuka lewat skema file:// (sebagian file manager lama masih
+                    pakai ini, bukan content://), yang kadang tidak selalu punya
+                    mimeType audio/* yang benar terpasang di sistem.
+                 category BROWSABLE disertakan juga supaya ikut muncul kalau file
+                 dibuka dari link/browser, bukan cuma dari file manager. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="content" />
+                <data android:mimeType="audio/*" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="file" />
+                <data android:mimeType="audio/*" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="file" />
+                <data android:host="*" />
+                <data android:pathPattern=".*\\.mp3" />
+                <data android:pathPattern=".*\\.flac" />
+                <data android:pathPattern=".*\\.wav" />
+                <data android:pathPattern=".*\\.m4a" />
+                <data android:pathPattern=".*\\.ogg" />
+                <data android:pathPattern=".*\\.dsf" />
+                <data android:pathPattern=".*\\.dff" />
+            </intent-filter>
+        </activity>
+
+        <service
+            android:name=".audio.PlaybackService"
+            android:foregroundServiceType="mediaPlayback"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="androidx.media3.session.MediaSessionService" />
+                <action android:name="android.intent.action.MEDIA_BUTTON" />
+                <!-- BARU (Android Auto): PlaybackService sekarang MediaLibraryService
+                     (lihat PlaybackService.kt), action ini yang dipakai host Android
+                     Auto/Assistant untuk MENEMUKAN app ini sebagai app media yang bisa
+                     di-browse, terpisah dari action MediaSessionService di atas yang
+                     dipakai Media3 sendiri (controller/notifikasi). -->
+                <action android:name="android.media.browse.MediaBrowserService" />
+            </intent-filter>
+        </service>
+
+        <receiver
+            android:name="androidx.media3.session.MediaButtonReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MEDIA_BUTTON" />
+            </intent-filter>
+        </receiver>
+
+        <!-- BARU (v2.3, Widget Home Screen) -->
+        <receiver
+            android:name=".widget.PlayerWidgetProvider"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/player_widget_info" />
+        </receiver>
+
+        <!-- BARU (Android Auto): descriptor wajib supaya app ini dikenali sebagai
+             app kategori "media" oleh Android Auto (ditampilkan di launcher mobil &
+             boleh dibrowse dari sana), lihat res/xml/automotive_app_desc.xml. -->
+        <meta-data
+            android:name="com.google.android.gms.car.application"
+            android:resource="@xml/automotive_app_desc" />
+
+    </application>
+
+</manifest>
