@@ -1,37 +1,27 @@
+# --- Build output -----------------------------------------------------
 *.iml
 .gradle/
+build/
+app/build/
 /local.properties
-/.idea/
-.DS_Store
-/build/
-/captures/
-.externalNativeBuild/
-.cxx/
-local.properties
+/captures
+.externalNativeBuild
+.cxx
 
-# Signing
+# --- Android Studio / IntelliJ ---------------------------------------
+.idea/
+*.hprof
+
+# --- Signing (JANGAN pernah ikut ke git) -----------------------------
+keystore.properties
 *.jks
 *.keystore
-keystore.properties
 
-# Build outputs
-*.apk
-*.aab
-*.ap_
-*.dex
+# --- OS ---------------------------------------------------------------
+.DS_Store
+Thumbs.db
 
-# Log files
-*.log
-
-# Android Studio
-.navigation/
-*.iws
-
-# Gradle
-.gradle
-gradle-app.setting
-!gradle-wrapper.jar
-!gradle-wrapper.properties
-
-# Google services (kalau ada, jangan commit API key)
-google-services.json
+# --- CATATAN PENTING --------------------------------------------------
+# gradle/wrapper/gradle-wrapper.jar, gradlew, dan gradlew.bat HARUS ikut
+# ke git. Tanpa ketiganya, orang yang clone repo ini tidak bisa build
+# sama sekali. Jangan ditambahkan ke daftar ignore di atas.

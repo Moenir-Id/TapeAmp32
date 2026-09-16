@@ -15,8 +15,17 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.ProgressBarRangeInfo
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.progressBarRangeInfo
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.setProgress
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
+import com.projectzero.tapeamp32.R
 import kotlin.math.max
+import kotlin.math.roundToInt
 
 @Composable
 fun WaveformSeekBar(
@@ -36,8 +45,27 @@ fun WaveformSeekBar(
 
     val displayFraction = if (isDragging) dragFraction else progressFraction
 
+    // v2.7 (aksesibilitas): sebelumnya seekbar ini cuma Canvas + pointerInput,
+    // jadi bagi TalkBack komponennya TIDAK ADA sama sekali -- tidak bisa
+    // difokus, posisi lagu tidak pernah dibacakan, dan seek mustahil dilakukan
+    // karena tap/drag mentah tidak diteruskan saat TalkBack aktif. Blok
+    // semantics di bawah membuatnya dikenali sebagai slider: posisinya
+    // dibacakan dalam persen, dan aksi "atur nilai" memanggil onSeek yang sama
+    // dengan jalur sentuh biasa.
+    val seekLabel = stringResource(R.string.a11y_seek_position)
+    val safeFraction = displayFraction.coerceIn(0f, 1f)
+
     Canvas(
         modifier = modifier
+            .semantics {
+                contentDescription = seekLabel
+                progressBarRangeInfo = ProgressBarRangeInfo(safeFraction, 0f..1f)
+                stateDescription = "${(safeFraction * 100f).roundToInt()}%"
+                setProgress { target ->
+                    currentOnSeek(target.coerceIn(0f, 1f))
+                    true
+                }
+            }
             .pointerInput(Unit) {
                 detectTapGestures { offset ->
                     val fraction = (offset.x / size.width).coerceIn(0f, 1f)

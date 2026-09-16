@@ -384,4 +384,12 @@
     <string name="streaming_edit_dialog_url_label">URL do stream</string>
     <string name="streaming_edit_save">SALVAR</string>
     <string name="streaming_edit_cancel">CANCELAR</string>
+
+    <!-- v2.7: aksi notifikasi (shuffle / tutup app) & slider headroom EQ -->
+    <string name="notif_action_shuffle">Aleatório</string>
+    <string name="notif_action_close">Fechar o app</string>
+    <string name="eq_headroom_safety_label">VOLUME MÁX. ↔ MARGEM SEGURA</string>
+    <string name="eq_headroom_safety_desc">Menor = som geral mais alto, mas o limitador atua com mais frequência em presets de EQ com realces grandes ou sobrepostos. Maior = margem mais segura, porém volume menor nesses mesmos presets.</string>
+    <!-- v2.7: dibacakan TalkBack untuk waveform seekbar -->
+    <string name="a11y_seek_position">Posição de reprodução</string>
 </resources>

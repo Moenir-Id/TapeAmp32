@@ -33,6 +33,18 @@ internal val changelogEntries = listOf(
 
     ChangelogEntry(
         version = "v${BuildConfig.VERSION_NAME}",
+        tagline = "Tombol Shuffle & Tutup App di notifikasi, terjemahan yang ketinggalan, dan kesiapan rilis (target Android 16, R8, backup rules, unit test).",
+        notes = listOf(
+            "Fix: tombol SHUFFLE dan TUTUP APP di notifikasi, serta label slider \"MAX LOUDNESS / SAFE HEADROOM\" di tab BATAS, sebelumnya cuma ada dalam bahasa Inggris. Empat teks itu tidak pernah ditambahkan ke 9 berkas terjemahan -- termasuk bahasa Indonesia sendiri -- jadi semua pengguna non-Inggris melihat teks Inggris di situ. Sekarang lengkap di 10 bahasa.",
+            "Baru: unit test JVM (tidak butuh HP/emulator) untuk bagian yang paling sering jadi sumber bug diam-diam: kelengkapan string di semua bahasa, parser lirik .lrc, dan antrian shuffle. Test string-nya otomatis GAGAL kalau ada teks baru yang lupa diterjemahkan, jadi bug \"terjemahan ketinggalan\" yang sudah berulang tiga kali (v1.5, v2.2/2.3, v2.6) tidak bisa lolos lagi tanpa ketahuan. Jalankan dengan: gradlew testDebugUnitTest",
+            "Target Android dinaikkan dari 14 (API 34) ke 16 (API 36). Sejak 31 Agustus 2026 Google Play menolak app yang masih target di bawah itu. Android minimum TIDAK berubah: app tetap jalan mulai Android 8.0 (API 26) seperti sebelumnya.",
+            "Build release sekarang mengecilkan APK lewat R8 (minify + shrink resource) dan bisa menandatangani APK otomatis lewat berkas keystore.properties lokal yang tidak ikut ke repo. Aturan R8 ditulis hati-hati supaya extractor Media3 yang dimuat secara dinamis (FLAC, HLS) dan nama field di berkas backup/preset EQ tidak ikut dipangkas -- dua hal yang biasanya baru ketahuan rusak di build release, bukan di debug.",
+            "Cloud backup sekarang punya aturan eksplisit: yang dipulihkan ke HP baru hanya preferensi (preset EQ, tema, bahasa, stasiun favorit), sementara cache waveform tidak ikut karena hanya berlaku untuk HP lama.",
+            "Aksesibilitas: ikon-ikon yang sebelumnya bisu bagi TalkBack sekarang punya deskripsi."
+        )
+    ),
+    ChangelogEntry(
+        version = "v2.6",
         tagline = "Fix tap/geser baris lirik yang tidak memindahkan posisi playback lagu.",
         notes = listOf(
             "Fix: tap baris lirik tidak melakukan seek -- sebelumnya halaman Lirik cuma menampilkan baris yang sedang berjalan tanpa handler tap sama sekali, jadi menyentuh atau menggeser ke baris lirik tertentu tidak memindahkan posisi playback lagu. Sekarang tap pada baris lirik memanggil seekTo sehingga playback langsung lompat ke waktu baris tersebut."

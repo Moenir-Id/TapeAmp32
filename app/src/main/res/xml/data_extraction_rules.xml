@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Aturan backup untuk Android 12+ (android:dataExtractionRules).
+  Lihat backup_rules.xml untuk alasan pemilihan isinya.
+
+  cloud-backup  = backup ke akun Google.
+  device-transfer = pindah langsung HP lama -> HP baru.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <include domain="file" path="datastore/" />
+        <exclude domain="cache" path="." />
+        <exclude domain="external_cache" path="." />
+    </cloud-backup>
+    <device-transfer>
+        <include domain="file" path="datastore/" />
+        <exclude domain="cache" path="." />
+        <exclude domain="external_cache" path="." />
+    </device-transfer>
+</data-extraction-rules>

@@ -1,17 +1,27 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
+// Dibaca di signingConfigs (lihat di bawah). File-nya opsional & tidak ikut ke git.
+val keystorePropertiesFile = rootProject.file("keystore.properties")
+val keystoreProperties = Properties().apply {
+    if (keystorePropertiesFile.exists()) {
+        keystorePropertiesFile.inputStream().use { load(it) }
+    }
+}
+
 android {
     namespace = "com.projectzero.tapeamp32"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.projectzero.tapeamp32"
         minSdk = 26
-        targetSdk = 34
+        targetSdk = 36
         // v1.9 (patch): REPLAY GAIN beneran. Dulu ada toggle "ReplayGain" di kategori
         // AUDIO & EFFECTS (Settings) tapi ternyata tidak pernah benar-benar mengubah
         // suara -- dihapus di v1.4.1 bersama toggle palsu lainnya. Sekarang pipeline
@@ -56,13 +66,52 @@ android {
         // Side A (Library) <-> Side B (Stream), stream terakhir di-resume otomatis,
         // label A/B ikut string resource ~10 bahasa. Lihat changelog di dalam app
         // untuk detail lengkap.
-        versionCode = 17
-        versionName = "2.6"
+        versionCode = 18
+        versionName = "2.7"
     }
+
+    signingConfigs {
+        // Sign release otomatis TANPA menaruh password di dalam repo.
+        // Bikin file `keystore.properties` di root project (sudah masuk .gitignore):
+        //     storeFile=C:/path/ke/tapeamp32.jks
+        //     storePassword=xxx
+        //     keyAlias=tapeamp32
+        //     keyPassword=xxx
+        // Kalau file itu tidak ada, blok ini dilewati dan build release tetap jalan
+        // (hanya saja APK-nya unsigned dan harus di-sign manual seperti sebelumnya).
+        if (keystoreProperties.getProperty("storeFile") != null) {
+            create("release") {
+                storeFile = file(keystoreProperties.getProperty("storeFile"))
+                storePassword = keystoreProperties.getProperty("storePassword")
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+            }
+        }
+    }
+
+    val releaseSigningConfig = signingConfigs.findByName("release")
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            // CATATAN RAM: mesin build ini cuma 3GB (lihat gradle.properties).
+            // R8 (minify) butuh memori lebih saat build release. Kalau build
+            // release gagal dengan OutOfMemory / "Daemon disappeared", ubah dua
+            // baris di bawah ini jadi `false` -- app tetap jalan normal, cuma
+            // APK-nya lebih besar dan kode tidak diobfuscate.
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+            releaseSigningConfig?.let { signingConfig = it }
+        }
+    }
+
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = false
+            isReturnDefaultValues = true
         }
     }
 
@@ -139,4 +188,8 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.6.0")
 
     debugImplementation("androidx.compose.ui:ui-tooling")
+
+    // BARU (v2.7): unit test JVM murni -- tidak butuh emulator/HP.
+    // Jalankan dengan: gradlew testDebugUnitTest
+    testImplementation("junit:junit:4.13.2")
 }

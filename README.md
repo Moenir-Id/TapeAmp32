@@ -118,7 +118,7 @@ buat orang seperti saya.
 - Audio processing custom (Biquad filter, parametric EQ, limiter dengan
   lookahead) — bukan library pihak ketiga
 - DataStore untuk persist settings
-- minSdk 26, targetSdk/compileSdk 34
+- minSdk 26 (Android 8.0), targetSdk/compileSdk 36 (Android 16)
 - Arsitektur modular: tiap layar dipecah jadi beberapa file berdasarkan
   tanggung jawabnya (mis. `EqualizerScreen`, `EqualizerSubMenus`,
   `EqualizerVocalStereoMenus`, `EqualizerHeaderAndSliders`, dst.)
@@ -151,15 +151,43 @@ gradle wrapper --gradle-version 9.5
 # app/build/outputs/apk/debug/app-debug.apk
 ```
 
+### Menjalankan test
+
+Unit test-nya murni JVM — tidak butuh HP maupun emulator:
+
+```bash
+./gradlew testDebugUnitTest
+```
+
+Yang dicek: kelengkapan string di 10 bahasa (gagal kalau ada teks baru yang
+lupa diterjemahkan), parser lirik `.lrc`, dan antrian shuffle.
+
+### Build release yang ditandatangani
+
+Bikin file `keystore.properties` di root project (sudah masuk `.gitignore`,
+jadi tidak akan ikut ke git):
+
+```properties
+storeFile=C:/path/ke/tapeamp32.jks
+storePassword=xxx
+keyAlias=tapeamp32
+keyPassword=xxx
+```
+
+Lalu `./gradlew assembleRelease`. Kalau file itu tidak ada, build tetap jalan,
+hanya saja APK-nya unsigned. Build release memakai R8 — kalau gagal dengan
+OutOfMemory di mesin RAM kecil, matikan `isMinifyEnabled`/`isShrinkResources`
+di `app/build.gradle.kts`.
+
 ### Requirement
 
 - JDK 17+
-- Android SDK dengan `compileSdk 34` terpasang
+- Android SDK dengan `compileSdk 36` (Android 16) terpasang
 - Koneksi internet saat sync pertama kali (download dependency dari Google/Maven Central)
 
 ## Status
 
-Masih aktif dikembangkan — versi saat ini **2.6**. Bug reports & feedback
+Masih aktif dikembangkan — versi saat ini **2.7**. Bug reports & feedback
 welcome, tapi ingat: saya juga masih belajar cara baca kode saya sendiri 😅
 
 Lihat `TapeAmp32_changelog.html` atau menu **Settings → System → About →
