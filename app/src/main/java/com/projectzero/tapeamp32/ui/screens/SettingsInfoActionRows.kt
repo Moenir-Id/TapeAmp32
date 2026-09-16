@@ -18,9 +18,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.projectzero.tapeamp32.ui.theme.*
 
-// Read-only info row and tappable action row composables used on the Settings
-// screen. Split out of SettingsScreen.kt.
-
 @Composable
 internal fun SettingsInfoRow(
     label: String,
@@ -55,10 +52,6 @@ internal fun SettingsInfoRow(
         }
     }
 }
-
-/* ================================================================
- * ACTION ROW
- * ================================================================ */
 
 @Composable
 internal fun SettingsActionRow(
@@ -95,7 +88,7 @@ internal fun SettingsActionRow(
             imageVector = Icons.Filled.OpenInNew,
             contentDescription = null,
             tint = GoldBright,
-            modifier = Modifier.size(17.dp) // PATCH: 14dp -> 17dp, icon action row
+            modifier = Modifier.size(17.dp)
         )
 
         Spacer(
@@ -111,12 +104,3 @@ internal fun SettingsActionRow(
         )
     }
 }
-
-/* ================================================================
- * CHANGELOG -- BARU (v1.4)
- *
- * Ringkasan riwayat versi ditulis native di sini (bukan memuat
- * TapeAmp32_changelog.html sebagai asset/WebView) supaya patch ini
- * tetap kecil -- tidak perlu pipeline asset baru, dan gaya visualnya
- * otomatis konsisten dengan SettingsRowCard/StrokeGold di sekitarnya.
- * ================================================================ */

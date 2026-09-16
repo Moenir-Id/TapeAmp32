@@ -187,6 +187,8 @@
     <string name="transport_stop">STOP</string>
     <string name="transport_ffwd">F.FWD</string>
     <string name="transport_shuffle">SHUFFLE</string>
+    <string name="notif_action_shuffle">Shuffle</string>
+    <string name="notif_action_close">Close app</string>
     <string name="transport_repeat">REPEAT</string>
 
 

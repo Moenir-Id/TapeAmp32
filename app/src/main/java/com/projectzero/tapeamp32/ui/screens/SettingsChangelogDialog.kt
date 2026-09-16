@@ -23,9 +23,6 @@ import androidx.compose.ui.window.Dialog
 import com.projectzero.tapeamp32.R
 import com.projectzero.tapeamp32.ui.theme.*
 
-// Changelog entry data + the dialog that renders the app's changelog list.
-// Split out of SettingsScreen.kt.
-
 internal data class ChangelogEntry(
     val version: String,
     val tagline: String,
@@ -33,12 +30,7 @@ internal data class ChangelogEntry(
 )
 
 internal val changelogEntries = listOf(
-    // FIX AKAR MASALAH (v2.6): entri PALING ATAS (rilis aktif saat ini) sekarang
-    // pakai "v" + BuildConfig.VERSION_NAME, bukan literal "v2.x" yang diketik
-    // manual -- supaya tag versi di sini tidak mungkin lagi ketinggalan dari
-    // versionName di app/build.gradle.kts. Entri-entri LAMA di bawahnya tetap
-    // literal string apa adanya karena itu catatan sejarah versi yang sudah rilis
-    // dan tidak boleh ikut berubah otomatis.
+
     ChangelogEntry(
         version = "v${BuildConfig.VERSION_NAME}",
         tagline = "Fix tap/geser baris lirik yang tidak memindahkan posisi playback lagu.",

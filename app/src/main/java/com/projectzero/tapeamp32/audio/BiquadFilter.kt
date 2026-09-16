@@ -8,14 +8,6 @@ import kotlin.math.sqrt
 
 enum class BiquadType { LOW_SHELF, HIGH_SHELF, PEAKING }
 
-/**
- * Biquad IIR filter menggunakan formula RBJ "Audio EQ Cookbook", topologi Direct Form II
- * Transposed (DF2T). Semua koefisien & state dihitung/disimpan dalam Double (64-bit) --
- * DF2T dipilih karena lebih stabil secara numerik dibanding Direct Form I terutama untuk
- * filter Q tinggi di frekuensi rendah (mis. shelving 31Hz dengan boost besar), yang persis
- * kondisi band paling bawah di equalizer 10-band ini.
- * Dilengkapi proteksi denormal number untuk menjaga kestabilan DSP thread.
- */
 class BiquadFilter {
 
     private var b0 = 1.0
@@ -24,9 +16,6 @@ class BiquadFilter {
     private var a1 = 0.0
     private var a2 = 0.0
 
-    // State Direct Form II Transposed: hanya 2 variabel (w1, w2), bukan 4 seperti Direct
-    // Form I (x1,x2,y1,y2). Per sample: y0 = b0*x0 + w1; w1 = b1*x0 - a1*y0 + w2;
-    // w2 = b2*x0 - a2*y0.
     private var w1 = 0.0
     private var w2 = 0.0
 
@@ -74,9 +63,6 @@ class BiquadFilter {
             }
         }
 
-        // Guardrail: kalau kombinasi freq/Q/gain menghasilkan koefisien tidak valid
-        // (NaN/Infinite -- bisa terjadi pada input ekstrem), jatuhkan ke unity-pass
-        // supaya tidak membisukan/merusak audio.
         if (!nb0.isFinite() || !nb1.isFinite() || !nb2.isFinite() || !na1.isFinite() || !na2.isFinite()) {
             nb0 = 1.0; nb1 = 0.0; nb2 = 0.0; na1 = 0.0; na2 = 0.0
         }
@@ -84,11 +70,6 @@ class BiquadFilter {
         b0 = nb0; b1 = nb1; b2 = nb2; a1 = na1; a2 = na2
     }
 
-    /**
-     * Magnitude response |H(e^jw)| dari koefisien filter yang SEDANG aktif, dipakai untuk
-     * menghitung headroom gabungan yang SEBENARNYA (bukan tebakan/heuristik) di
-     * ParametricEqAudioProcessor -- lihat catatan di sana.
-     */
     fun magnitudeAt(freqHz: Double, sampleRate: Double): Double {
         val w = 2.0 * PI * freqHz / sampleRate
         val cosw = cos(w)
@@ -106,11 +87,9 @@ class BiquadFilter {
         return if (aMag < 1e-12) bMag else bMag / aMag
     }
 
-    /** Memproses satu sampel audio (Direct Form II Transposed) dengan proteksi anti-denormal. */
     fun process(x0: Double): Double {
         var y0 = b0 * x0 + w1
 
-        // Penanganan Denormal Number (mencegah tingginya konsumsi CPU saat hening)
         if (kotlin.math.abs(y0) < 1e-15) {
             y0 = 0.0
         }
@@ -121,7 +100,6 @@ class BiquadFilter {
         return y0
     }
 
-    /** Memproses blok buffer audio secara massal untuk performa tinggi. */
     fun processBuffer(samples: DoubleArray) {
         for (i in samples.indices) {
             samples[i] = process(samples[i])

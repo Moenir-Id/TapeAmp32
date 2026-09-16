@@ -1,8 +1,5 @@
 package com.projectzero.tapeamp32.data
 
-/**
- * Skema preset Poweramp Equalizer
- */
 data class EqBand(
     val type: Int,
     val channels: Int = 0,

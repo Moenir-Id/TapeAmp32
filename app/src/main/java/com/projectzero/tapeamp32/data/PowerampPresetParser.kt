@@ -3,9 +3,6 @@ package com.projectzero.tapeamp32.data
 import org.json.JSONArray
 import org.json.JSONObject
 
-/**
- * Utility parser / serializer untuk preset EQ parametrik yang kompatibel dengan format Poweramp JSON.
- */
 object PowerampPresetParser {
 
     fun parse(json: String): List<EqPreset> {
@@ -80,10 +77,6 @@ object PowerampPresetParser {
         return arr.toString(2)
     }
 
-    /**
-     * Serialize beberapa preset sekaligus (dipakai untuk menyimpan daftar preset custom/
-     * hasil upload ke DataStore, agar bisa dipulihkan lagi saat aplikasi dibuka ulang).
-     */
     fun serializeList(presets: List<EqPreset>): String {
         val arr = JSONArray()
         presets.forEach { preset ->

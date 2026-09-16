@@ -24,19 +24,8 @@ data class RadioStation(
     val codec: String = "MP3"
 )
 
-// No bundled stations by default — user adds their own via the
-// "ADD STREAM URL" field in StreamingScreen, or wire up a real
-// station directory here later.
 val SampleFavoriteStations = listOf<RadioStation>()
 
-/*
- * FIX (patch "streaming persist"): stasiun custom yang ditambahkan lewat "ADD STREAM
- * URL" sebelumnya cuma disimpan di `remember { mutableStateOf(...) }` milik
- * StreamingScreen -- hilang lagi begitu proses app mati / composable di-dispose.
- * Dua fungsi ini serialize/deserialize daftar RadioStation custom ke JSON, dengan
- * pola yang sama seperti MusicRepository.serializeSongs/deserializeSongs, supaya
- * bisa disimpan di SettingsRepository (DataStore) dan dipulihkan saat app dibuka lagi.
- */
 fun serializeRadioStations(stations: List<RadioStation>): String {
     val arr = JSONArray()
     stations.forEach { station ->

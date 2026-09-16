@@ -36,18 +36,12 @@ import com.projectzero.tapeamp32.ui.theme.StrokeGold
 import com.projectzero.tapeamp32.ui.theme.TextMuted
 import com.projectzero.tapeamp32.data.EqPreset
 
-// Sub-menu row composables for the Equalizer screen tabs (EQU tab tab-row, NADA, BATAS).
-// Split out of EqualizerScreen.kt to keep that file focused on the screen's own layout/state.
-
 @Composable
 internal fun EqSubTabRow(
     selected: EqSubTab,
     onSelect: (EqSubTab) -> Unit
 ) {
-    // BARU (patch "DSP control knobs"): dibungkus horizontalScroll -- sebelumnya cuma
-    // 3 tab (EQU/NADA/BATAS) selalu muat, tapi sekarang ada 5 tab (+VOCAL/+STEREO)
-    // yang bisa kesempitan di layar sempit. Row tetap terlihat identik di layar
-    // lebar (tidak ada apa pun untuk digulir), cuma jadi aman digeser kalau perlu.
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -62,10 +56,7 @@ internal fun EqSubTabRow(
                 color = if (isSelected) BgBlack else GoldBright,
                 fontFamily = MonoFont,
                 fontWeight = FontWeight.Bold,
-                // PATCH (v1.5, "seragamkan font"): disamakan dengan label tab
-                // sejenis di layar lain (NavRail: 8sp/0.35sp) -- sebelumnya
-                // 0.4sp di sini vs 0.35sp di NavRail vs 9sp/0.2sp di sidebar
-                // Library, padahal ketiganya sama-sama "label tab".
+
                 fontSize = 8.sp,
                 letterSpacing = 0.35.sp,
                 modifier = Modifier
@@ -82,10 +73,6 @@ internal fun EqSubTabRow(
         }
     }
 }
-
-// ================================================================
-// SUB-MENU: NADA (PREAMP + QUICK BASS/TREBLE)
-// ================================================================
 
 @Composable
 internal fun EqToneSubMenu(
@@ -170,53 +157,37 @@ internal fun EqToneSubMenu(
     }
 }
 
-// ================================================================
-// SUB-MENU: BATAS (SOFT LIMITER & EQ BYPASS)
-// ================================================================
-
 @Composable
 internal fun EqLimiterSubMenu(
     limiterOn: Boolean,
     eqBypassOn: Boolean,
     bitPerfectOn: Boolean,
-    // BARU (v1.8): status offload hardware AKTUAL, ditampilkan sebagai status row
-    // di dalam kartu toggle BIT-PERFECT MODE begitu toggle-nya aktif -- lihat
-    // EqOffloadStatusRow di bawah.
+
     offloadActive: Boolean,
     onLimiterToggle: () -> Unit,
     onBypassToggle: () -> Unit,
     onBitPerfectToggle: () -> Unit,
-    // BARU (v1.7): EQ per-lagu otomatis
+
     autoEqPerSong: Boolean,
     currentSongSavedPresetName: String?,
     onAutoEqToggle: () -> Unit,
     onForgetSongPreset: () -> Unit,
-    // BARU (v1.9): REPLAY GAIN beneran
+
     replayGainOn: Boolean,
     currentSongReplayGainDb: Double?,
     onReplayGainToggle: () -> Unit,
     onForgetReplayGain: () -> Unit,
-    // BARU (patch "Crossfade")
+
     crossfadeOn: Boolean,
     crossfadeSeconds: Float,
     onCrossfadeToggle: () -> Unit,
     onCrossfadeSecondsChange: (Float) -> Unit,
-    // BARU (patch "headroom slider")
+
     headroomSafetyRatio: Double,
     onHeadroomSafetyRatioChange: (Double) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // FIX (v1.8.1): Column ini sebelumnya TIDAK scrollable, padahal tinggi panel EQ
-    // di sebelahnya (EQ MAIN PANEL) tetap/fillMaxHeight() -- di jendela/layar yang
-    // lebih pendek (window desktop kecil, split-screen, atau HP dengan status/nav bar
-    // besar), 4 kartu toggle + deskripsinya tidak selalu muat, dan kartu PALING BAWAH
-    // (AUTO EQ PER LAGU) ke-CLIP oleh batas panel -- deskripsinya hilang dan rocker
-    // switch-nya kepotong di tepi bawah, kelihatan seperti "ukurannya beda" padahal
-    // sebenarnya semua toggle di sini sudah memakai EqToggleRow/EqRockerSwitch yang
-    // identik (lihat di bawah) -- akar masalahnya konten submenu ini kelebihan
-    // tinggi tanpa cara untuk di-scroll. verticalScroll() di bawah membuat seluruh
-    // 4 kartu (dan status tambahan di dalamnya) selalu bisa digulir sampai terlihat
-    // penuh, di layar setinggi apa pun.
+
     Column(
         modifier = modifier.verticalScroll(rememberScrollState())
     ) {
@@ -256,16 +227,6 @@ internal fun EqLimiterSubMenu(
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        // BARU (patch "headroom slider"): satu-satunya kontrol kontinu di tab ini
-        // yang BENAR-BENAR terhubung ke DSP -- lihat catatan lama di
-        // EqualizerScreen.kt (di titik pemanggilan EqLimiterSubMenu) yang sengaja
-        // TIDAK memasang slider apa pun sebelumnya karena nilai limiter threshold
-        // memang tetap/tidak ada jalur ke DSP-nya. Beda dengan itu, slider ini
-        // langsung mengubah ParametricEqAudioProcessor.headroomSafetyRatio lewat
-        // PlayerViewModel.updateHeadroomSafetyRatio -> PlayerManager, dan
-        // rebuildFilters() dipanggil ulang seketika di dalam prosesor supaya
-        // preset EQ yang sedang aktif langsung terdengar berubah, bukan menunggu
-        // ganti preset dulu.
         EqHeadroomSafetySlider(
             value = headroomSafetyRatio,
             onValueChange = onHeadroomSafetyRatioChange
@@ -282,30 +243,12 @@ internal fun EqLimiterSubMenu(
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        // BARU (v1.6): master override -- beda dari EQ BYPASS di atas, toggle ini
-        // sekaligus melewati Vocal, Balance, Stereo Expansion, Mono/Stereo, DAN
-        // Limiter (bukan cuma EQ 10-band) di sisi software, SEKALIGUS meminta jalur
-        // AUDIO OFFLOAD hardware ke ExoPlayer (generik untuk device/USB DAC apa pun
-        // -- bukan device tertentu). Kalau device/DAC/format lagu tidak mendukung
-        // offload, ExoPlayer otomatis fallback diam-diam ke bypass software di atas
-        // (tetap 100% berfungsi, cuma tanpa hardware direct-path tambahan).
-        // PATCH (v1.8, "seragamkan ukuran toggle"): status tambahan (offload di sini,
-        // preset tersimpan di AUTO EQ PER LAGU di bawah) sekarang dilewatkan lewat
-        // parameter statusContent EqToggleRow, DIRENDER DI DALAM kartu toggle yang
-        // sama (border + background + padding horizontal 12dp yang identik) alih-alih
-        // sebagai baris teks lepas di bawahnya. Sebelumnya baris status AUTO EQ PER
-        // LAGU cuma berinset 2dp tanpa kartu sendiri, jadi terlihat "nyempil" dan
-        // membuat blok toggle itu terasa beda ukuran/proporsi dari SOFT LIMITER/EQ
-        // BYPASS/BIT-PERFECT MODE di atasnya -- sekarang keempatnya konsisten satu
-        // bahasa visual, tinggi kartu cuma beda kalau memang ada status ekstra untuk
-        // ditampilkan (proporsional terhadap kontennya, bukan acak).
         EqToggleRow(
             label = stringResource(R.string.eq_bitperfect_label),
             description = stringResource(R.string.eq_bitperfect_desc),
             isOn = bitPerfectOn,
             onToggle = onBitPerfectToggle,
-            // BARU (v1.8): status offload AKTUAL real-time -- lihat "JUJUR diakui"
-            // di changelog v1.6, akhirnya ditampilkan di sini (bukan cuma adb logcat).
+
             statusContent = if (bitPerfectOn) {
                 { EqOffloadStatusRow(offloadActive = offloadActive) }
             } else {
@@ -315,10 +258,6 @@ internal fun EqLimiterSubMenu(
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        // BARU (v1.7): EQ per-lagu otomatis -- kalau nyala, preset yang dipilih manual
-        // dari dropdown di atas otomatis "diingat" untuk lagu yang sedang diputar, lalu
-        // dipasang lagi sendiri begitu lagu itu diputar ulang (next/prev, lockscreen,
-        // atau replay), jadi tidak perlu ganti preset manual tiap pindah lagu.
         EqToggleRow(
             label = stringResource(R.string.eq_autoeq_label),
             description = stringResource(R.string.eq_autoeq_desc),
@@ -338,12 +277,6 @@ internal fun EqLimiterSubMenu(
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        // BARU (v1.9): REPLAY GAIN beneran -- lihat changelog v1.9 untuk cerita
-        // lengkapnya (dulu ada di kategori AUDIO & EFFECTS, dihapus di v1.4.1 karena
-        // ternyata palsu). Sekarang mengukur RMS sample PCM asli lagu yang SEDANG
-        // diputar (kalau belum pernah terukur), lalu menyimpan gain-nya supaya
-        // pemutaran berikutnya level lagu ini otomatis disamakan dengan lagu lain
-        // di koleksi. Nonaktif otomatis saat BIT-PERFECT MODE menyala.
         EqToggleRow(
             label = stringResource(R.string.eq_replaygain_label),
             description = stringResource(R.string.eq_replaygain_desc),
@@ -363,12 +296,6 @@ internal fun EqLimiterSubMenu(
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        // BARU (patch "Crossfade"): fade-out lagu sekarang bertumpuk (overlap)
-        // dengan fade-in lagu berikutnya -- beda dari GAPLESS (yang cuma
-        // menghilangkan jeda hening, tanpa overlap sama sekali). Hanya berlaku
-        // saat lagu berpindah SENDIRI (auto-advance dalam antrian/repeat),
-        // bukan saat next/prev ditekan manual -- perpindahan manual tetap
-        // instan seperti biasa supaya terasa responsif.
         EqToggleRow(
             label = stringResource(R.string.eq_crossfade_label),
             description = stringResource(R.string.eq_crossfade_desc),
@@ -381,19 +308,6 @@ internal fun EqLimiterSubMenu(
             }
         )
 
-        // FIX (v1.8.1): Modifier.weight() TIDAK BOLEH dipakai di dalam Column yang
-        // sudah verticalScroll() (Column butuh tinggi tak-terbatas untuk discroll,
-        // weight() butuh tinggi terbatas untuk membagi ruang -- keduanya bentrok dan
-        // akan crash saat runtime kalau tetap dipakai bareng). Diganti spacer tinggi
-        // tetap sekadar kasih jarak napas di bawah kartu terakhir.
         Spacer(modifier = Modifier.height(16.dp))
     }
 }
-
-// BARU (v1.7): baris status kecil di dalam kartu toggle AUTO EQ PER LAGU --
-// menunjukkan preset yang sudah tersimpan untuk lagu yang SEDANG diputar (kalau
-// ada), plus tombol "HAPUS" buat lupakan preset itu lagi kalau salah pilih.
-// PATCH (v1.8): padding horizontal 2dp sendiri DIHAPUS -- sekarang dirender lewat
-// parameter statusContent EqToggleRow, yang sudah menyediakan inset 12dp yang
-// sama dengan baris toggle di atasnya (lihat EqToggleRow), supaya ukuran/inset
-// seragam dengan toggle lain, bukan nyempil sendiri di pinggir.

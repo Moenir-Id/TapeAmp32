@@ -24,17 +24,6 @@ import androidx.compose.ui.unit.sp
 import com.projectzero.tapeamp32.R
 import com.projectzero.tapeamp32.ui.theme.*
 
-/* ============================================================
- * POWER SWITCH
- * ============================================================
- * FIX: sebelumnya panel ini (ditambah PlayerSidePanel di PlayerScreen.kt
- * yang memanggilnya) menampilkan label "POWER" DAN teks "ON"/"OFF" DUA
- * KALI (satu di luar, satu lagi di dalam komponen ini) -- menumpuk dan
- * berantakan. Sekarang PowerSwitch HANYA menampilkan SATU label teks
- * ("POWER"). Status ON/OFF cukup ditunjukkan lewat LED merah + posisi
- * fisik saklar toggle di bawahnya -- tidak perlu diulang lagi sebagai teks.
- * ============================================================ */
-
 @Composable
 fun PowerSwitch(
     on: Boolean,
@@ -46,11 +35,6 @@ fun PowerSwitch(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
-        /*
-         * POWER LABEL (SATU-SATUNYA teks indikator di panel ini;
-         * status ON/OFF ditunjukkan oleh LED + posisi saklar di bawah)
-         */
 
         Text(
             text = stringResource(R.string.transport_power),
@@ -64,10 +48,6 @@ fun PowerSwitch(
         Spacer(
             modifier = Modifier.height(5.dp)
         )
-
-        /*
-         * RED POWER LED
-         */
 
         Box(
             modifier = Modifier.size(22.dp),
@@ -127,10 +107,6 @@ fun PowerSwitch(
             modifier = Modifier.height(7.dp)
         )
 
-        /*
-         * PHYSICAL TOGGLE
-         */
-
         Box(
             modifier = Modifier
                 .width(34.dp)
@@ -166,10 +142,6 @@ fun PowerSwitch(
                     Alignment.BottomCenter
         ) {
 
-            /*
-             * INNER TRACK
-             */
-
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -189,10 +161,6 @@ fun PowerSwitch(
                     else
                         Alignment.BottomCenter
             ) {
-
-                /*
-                 * PHYSICAL SWITCH KNOB
-                 */
 
                 Box(
                     modifier = Modifier
@@ -230,21 +198,6 @@ fun PowerSwitch(
     }
 }
 
-/* ============================================================
- * SCREEN TOGGLE BUTTON (FIX -- saklar fisik, gaya sama dengan PowerSwitch)
- * ============================================================
- * Sebelumnya berupa tombol kotak dengan ikon Fullscreen saja -- sekarang
- * dibangun ulang memakai struktur SAMA PERSIS dengan PowerSwitch (label
- * teks di atas, LED bulat, lalu saklar toggle fisik naik/turun di
- * bawahnya) supaya kedua tombol terlihat sepasang/senada. Bedanya cuma
- * warna LED & knob: SCREEN pakai warna emas (Gold/GoldBright), POWER
- * pakai merah (LedRed) -- dan travel saklarnya lebih pendek karena
- * SCREEN tidak butuh ventilasi grille di bawahnya seperti PowerSwitch.
- *
- * Fungsinya tetap 100% untuk toggle Immersive/Full Screen Mode lewat
- * FullScreenController.
- * ============================================================ */
-
 @Composable
 fun ScreenToggleButton(
     fullScreenOn: Boolean,
@@ -256,11 +209,6 @@ fun ScreenToggleButton(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
-        /*
-         * SCREEN LABEL (persis pola PowerSwitch: satu-satunya teks
-         * indikator di komponen ini)
-         */
 
         Text(
             text = stringResource(R.string.transport_screen),
@@ -274,11 +222,6 @@ fun ScreenToggleButton(
         Spacer(
             modifier = Modifier.height(5.dp)
         )
-
-        /*
-         * GOLD SCREEN LED (versi emas dari LED merah PowerSwitch)
-         * FIX: disamakan ukurannya dengan LED PowerSwitch (22dp/9dp)
-         */
 
         Box(
             modifier = Modifier.size(22.dp),
@@ -338,11 +281,6 @@ fun ScreenToggleButton(
             modifier = Modifier.height(7.dp)
         )
 
-        /*
-         * PHYSICAL TOGGLE (FIX: disamakan ukurannya persis dengan
-         * saklar fisik PowerSwitch -- 34dp x 67dp, knob 26dp x 28dp)
-         */
-
         Box(
             modifier = Modifier
                 .width(34.dp)
@@ -378,10 +316,6 @@ fun ScreenToggleButton(
                     Alignment.BottomCenter
         ) {
 
-            /*
-             * INNER TRACK
-             */
-
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -401,10 +335,6 @@ fun ScreenToggleButton(
                     else
                         Alignment.BottomCenter
             ) {
-
-                /*
-                 * PHYSICAL SWITCH KNOB
-                 */
 
                 Box(
                     modifier = Modifier
@@ -441,7 +371,3 @@ fun ScreenToggleButton(
         }
     }
 }
-
-/* ============================================================
- * NOTE: VerticalVolumeSlider dipindah ke TransportBar.kt.
- * ============================================================ */

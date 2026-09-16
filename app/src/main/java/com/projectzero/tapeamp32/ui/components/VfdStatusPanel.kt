@@ -29,45 +29,20 @@ import androidx.compose.ui.unit.sp
 import com.projectzero.tapeamp32.R
 import com.projectzero.tapeamp32.ui.theme.*
 
-/* ================================================================
- * VFD STATUS PANEL
- * ----------------------------------------------------------------
- * Panel status ala layar Vacuum Fluorescent Display / LED Hi-Fi
- * klasik (Kenwood/Marantz/Pioneer era 80-90an): kaca cekung gelap,
- * scanline halus, "hantu" segmen mati di belakang teks aktif, dot
- * LED yang benar-benar menyala (glow ganda, bukan cuma warna teks),
- * dan bezel logam dengan sekrup di tiap sudut -- supaya panel ini
- * terasa sebagai UNIT HARDWARE TERPISAH, bukan sekadar 3 baris teks.
- *
- * Dipasang TEPAT DI BAWAH VuMeter, dalam kolom lebar yang SAMA
- * (lihat PlayerScreen: keduanya dibungkus satu Column ber-weight
- * supaya seluruh tinggi kolom terisi penuh, tidak menyisakan ruang
- * kosong dan tidak menempel ke elemen lain).
- * ================================================================ */
-
 @Composable
 fun VfdStatusPanel(
     isUsbDacConnected: Boolean,
     dacLabel: String?,
     dspEngineOn: Boolean,
     peakActive: Boolean,
-    // BARU: Hi-Res Audio Badge Detector. isHiRes = true jika sampleRate >= 48000 Hz
-    // ATAU bitDepth > 16-bit (lihat PlayerManager.bitDepthFromEncoding).
+
     isHiRes: Boolean = false,
     sampleRate: Int = 0,
     bitDepth: Int = 16,
-    // BARU (v1.8): status OFFLOAD hardware AKTUAL (bukan cuma toggle BIT-PERFECT
-    // MODE) -- bitPerfectOn = apakah toggle-nya diminta nyala, offloadActive =
-    // apakah AudioTrackConfig yang BENAR-BENAR dipakai ExoPlayer sekarang melapor
-    // offload=true. Sebelumnya (lihat changelog v1.6) status ini hanya bisa
-    // dikonfirmasi manual lewat adb logcat; sekarang muncul real-time di sini juga.
+
     bitPerfectOn: Boolean = false,
     offloadActive: Boolean = false,
-    // BARU (v2.1): SLEEP TIMER. sleepTimerActive = true kalau salah satu mode (MINUTES
-    // atau END_OF_TRACK) sedang berjalan -- lihat PlayerViewModel.sleepTimerMode.
-    // sleepTimerSubLabel sudah diformat siap-tampil oleh pemanggil (PlayerScreen), supaya
-    // panel ini tidak perlu tahu soal SleepTimerMode/formatSleepCountdown sama sekali --
-    // sama seperti dacLabel di atas yang juga sudah string jadi dari pemanggil.
+
     sleepTimerActive: Boolean = false,
     sleepTimerSubLabel: String = stringResource(R.string.vfd_off),
     modifier: Modifier = Modifier
@@ -91,10 +66,6 @@ fun VfdStatusPanel(
             )
             .padding(5.dp)
     ) {
-
-        /* ============================================================
-         * RECESSED GLASS
-         * ============================================================ */
 
         Column(
             modifier = Modifier
@@ -139,8 +110,6 @@ fun VfdStatusPanel(
 
             VfdDivider()
 
-            // BARU: baris badge Hi-Res. Saat isHiRes=false (audio standar 16-bit/44.1kHz
-            // atau belum ada lagu diputar), tampilkan "STD" / "44.1K" redup (ghost).
             VfdLine(
                 lit = isHiRes,
                 mainLabel = if (isHiRes) stringResource(R.string.vfd_hires) else stringResource(R.string.vfd_std),
@@ -151,12 +120,6 @@ fun VfdStatusPanel(
 
             VfdDivider()
 
-            // BARU (v1.8): baris OFFLOAD -- "OFF" redup selagu BIT-PERFECT MODE belum
-            // dinyalakan sama sekali (belum diminta). Begitu toggle aktif, baris ini
-            // menyala/redup sesuai status AKTUAL yang dilaporkan ExoPlayer: "HARDWARE"
-            // kalau device/USB DAC & format lagu benar-benar memakai jalur offload
-            // direct-path, atau "FALLBACK" (tetap redup, TIDAK dianggap error) kalau
-            // otomatis jatuh ke bypass software biasa.
             VfdLine(
                 lit = offloadActive,
                 mainLabel = stringResource(R.string.vfd_offload),
@@ -171,8 +134,6 @@ fun VfdStatusPanel(
 
             VfdDivider()
 
-            // BARU (v2.1): baris SLEEP TIMER -- "OFF" redup selagi tidak ada timer aktif,
-            // menyala begitu salah satu mode (hitung mundur / stop-setelah-lagu-ini) berjalan.
             VfdLine(
                 lit = sleepTimerActive,
                 mainLabel = stringResource(R.string.vfd_sleep),
@@ -188,10 +149,6 @@ fun VfdStatusPanel(
     }
 }
 
-/* ================================================================
- * SCANLINE OVERLAY (efek kaca VFD)
- * ================================================================ */
-
 private fun Modifier.vfdScanlines(): Modifier = this.drawWithContent {
     drawContent()
     val lineColor = Color.Black.copy(alpha = 0.22f)
@@ -206,10 +163,6 @@ private fun Modifier.vfdScanlines(): Modifier = this.drawWithContent {
         y += 3f
     }
 }
-
-/* ================================================================
- * SATU BARIS INDIKATOR (dot LED + label utama + label kecil)
- * ================================================================ */
 
 @Composable
 private fun VfdLine(
@@ -241,8 +194,6 @@ private fun VfdLine(
 
         Box(modifier = Modifier.weight(1f)) {
 
-            // "Hantu" segmen mati di belakang teks aktif -- ciri khas VFD/dot-matrix
-            // jadul di mana karakter yang tidak menyala tetap sedikit terlihat.
             Text(
                 text = ghostFor(mainLabel),
                 color = VfdPhosphorGhost,
@@ -274,10 +225,6 @@ private fun VfdLine(
     }
 }
 
-/* ================================================================
- * BARIS PEAK (LED kotak, berkedip saat aktif)
- * ================================================================ */
-
 @Composable
 private fun VfdPeakLine(peakActive: Boolean) {
 
@@ -302,8 +249,6 @@ private fun VfdPeakLine(peakActive: Boolean) {
         modifier = Modifier.fillMaxWidth()
     ) {
 
-        // LED kotak (bukan bulat) supaya beda bentuk dari 2 indikator di atasnya --
-        // menegaskan ini adalah indikator PERINGATAN, bukan status biasa.
         Box(
             modifier = Modifier
                 .size(7.dp)
@@ -335,10 +280,6 @@ private fun VfdPeakLine(peakActive: Boolean) {
     }
 }
 
-/* ================================================================
- * DOT LED BULAT DENGAN GLOW GANDA (lapisan luar redup + inti terang)
- * ================================================================ */
-
 @Composable
 private fun LedDot(
     color: Color,
@@ -350,7 +291,6 @@ private fun LedDot(
         modifier = Modifier.size(9.dp)
     ) {
 
-        // Lapisan glow luar
         Box(
             modifier = Modifier
                 .size(9.dp)
@@ -365,7 +305,6 @@ private fun LedDot(
                 )
         )
 
-        // Inti LED
         Box(
             modifier = Modifier
                 .size(4.5.dp)
@@ -380,10 +319,6 @@ private fun LedDot(
     }
 }
 
-/* ================================================================
- * DIVIDER TIPIS ANTAR BARIS (garis kaca, bukan garis UI biasa)
- * ================================================================ */
-
 @Composable
 private fun VfdDivider() {
 
@@ -395,18 +330,8 @@ private fun VfdDivider() {
     )
 }
 
-/* ================================================================
- * HELPER: bentuk "hantu segmen" dari label (semua karakter jadi
- * blok padat redup di belakang teks, meniru sel dot-matrix mati)
- * ================================================================ */
-
 private fun ghostFor(label: String): String =
     label.map { c -> if (c == ' ') ' ' else '█' }.joinToString("")
-
-/* ================================================================
- * HELPER: sub-label baris Hi-Res -- "24BIT / 96K" saat menyala,
- * "44.1K" saat standar CD, "--" saat belum ada lagu (sampleRate 0).
- * ================================================================ */
 
 @Composable
 private fun hiResSubLabel(isHiRes: Boolean, sampleRateHz: Int, bitDepth: Int): String {

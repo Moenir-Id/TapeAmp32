@@ -20,14 +20,6 @@ import com.projectzero.tapeamp32.ui.theme.*
 import com.projectzero.tapeamp32.viewmodel.PlayerViewModel
 import com.projectzero.tapeamp32.viewmodel.Screen
 
-/* ================================================================
- * LIBRARY TAB
- *
- * BARU (v1.2): tab PLAYLISTS ditambahkan di samping SONGS/ALBUMS/
- * ARTISTS/FOLDERS yang sudah ada, supaya playlist buatan pengguna
- * jadi bagian dari navigasi Library yang sama (bukan layar terpisah).
- * ================================================================ */
-
 internal enum class LibraryTab {
     SONGS,
     ALBUMS,
@@ -35,10 +27,6 @@ internal enum class LibraryTab {
     FOLDERS,
     PLAYLISTS
 }
-
-/* ================================================================
- * LIBRARY SCREEN
- * ================================================================ */
 
 @Composable
 fun LibraryScreen(
@@ -57,15 +45,8 @@ fun LibraryScreen(
         mutableStateOf("")
     }
 
-    // BARU (v1.2): "grouping isi library buat cepat" -- sebelumnya baris grup di tab
-    // ALBUMS/ARTISTS/FOLDERS cuma menampilkan nama + jumlah lagu tanpa bisa diketuk.
-    // Sekarang menyimpan grup mana yang sedang dibuka (drill-down) supaya pengguna
-    // bisa langsung lompat ke lagu-lagu di dalam grup itu, tanpa harus scroll/cari
-    // manual di tab SONGS.
     var openGroupKey by remember { mutableStateOf<String?>(null) }
 
-    // BARU (v1.2): playlist mana yang sedang dibuka (drill-down), dan dialog-dialog
-    // terkait playlist (buat baru / pilih playlist tujuan saat menambah lagu).
     var openPlaylistId by remember { mutableStateOf<String?>(null) }
     var showCreatePlaylistDialog by remember { mutableStateOf(false) }
     var addToPlaylistSong by remember { mutableStateOf<Song?>(null) }
@@ -75,15 +56,6 @@ fun LibraryScreen(
         openGroupKey = null
         openPlaylistId = null
     }
-
-    /* ------------------------------------------------------------
-     * SEARCH
-     *
-     * Library hanya menggunakan hasil scan folder yang memang
-     * sudah dimasukkan pengguna.
-     *
-     * Tidak ada refreshLibrary() otomatis di sini.
-     * ------------------------------------------------------------ */
 
     val filtered = remember(
         library,
@@ -118,16 +90,6 @@ fun LibraryScreen(
         playlists.firstOrNull { it.id == openPlaylistId }
     }
 
-    /* ============================================================
-     * ROOT
-     * ============================================================ */
-
-    // PATCH (klasik, seragam dgn Equalizer): sebelumnya sidebar + konten
-    // langsung menempel di BgBlack dengan 1 garis divider tipis -- sekarang
-    // dibungkus 2 panel gold-bordered (PanelBlack + StrokeGold, sudut
-    // membulat 7dp) dipisah jarak 8dp, PERSIS pola "EQ MAIN PANEL" +
-    // "VU METER PANEL" di EqualizerScreen supaya kedua layar terasa satu
-    // keluarga desain, bukan dua gaya berbeda.
     Row(
         modifier = Modifier
             .fillMaxSize()
@@ -136,19 +98,11 @@ fun LibraryScreen(
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
 
-        /* ========================================================
-         * LEFT LIBRARY NAVIGATION
-         * ======================================================== */
-
         LibrarySidebar(
             selectedTab = tab,
             onTabSelected = { switchTab(it) },
             isCompact = isCompact
         )
-
-        /* ========================================================
-         * MAIN CONTENT
-         * ======================================================== */
 
         Column(
             modifier = Modifier
@@ -167,10 +121,6 @@ fun LibraryScreen(
                 )
         ) {
 
-            // BARU (v1.2): saat sedang membuka sebuah grup (Album/Artist/Folder) atau
-            // sebuah playlist, toolbar pencarian & shuffle diganti header "back" ringkas
-            // supaya jelas pengguna sedang berada di dalam sebuah grup/playlist, bukan
-            // di daftar utama.
             val drillDownTitle = when {
                 tab == LibraryTab.PLAYLISTS && openPlaylist != null -> openPlaylist.name
                 tab != LibraryTab.SONGS && tab != LibraryTab.PLAYLISTS && openGroupKey != null ->
@@ -199,23 +149,15 @@ fun LibraryScreen(
 
             } else {
 
-                /* ====================================================
-                 * TOP TOOLBAR
-                 * ==================================================== */
-
                 LibraryToolbar(
                     query = query,
                     onQueryChange = { query = it },
-                    // FIX (v1.3): sebelumnya SHUFFLE ALL cuma memutar lagu tapi TIDAK
-                    // pindah ke layar Pemutar (beda perilaku dengan tap satu lagu yang
-                    // langsung redirect) -- sekarang disamakan: play lalu navigate ke
-                    // Screen.PLAYER, persis seperti onSongClick.
+
                     onShuffleAll = {
                         vm.shuffleAll()
                         vm.navigate(Screen.PLAYER)
                     },
-                    // BARU (v1.2): tombol "+" cuma relevan/tampil di tab PLAYLISTS,
-                    // dipakai untuk membuka dialog "New Playlist".
+
                     showNewPlaylistAction = tab == LibraryTab.PLAYLISTS,
                     onNewPlaylist = { showCreatePlaylistDialog = true }
                 )
@@ -225,10 +167,6 @@ fun LibraryScreen(
                 modifier = Modifier.height(9.dp)
             )
 
-            /* ====================================================
-             * CONTENT
-             * ==================================================== */
-
             when (tab) {
 
                 LibraryTab.SONGS -> {
@@ -237,15 +175,6 @@ fun LibraryScreen(
                         songs = filtered,
                         onSongClick = { song ->
 
-                            // FIX (v1.5): sebelumnya antrian diisi dari [filtered] (hasil
-                            // pencarian) -- kalau pencarian mempersempit hasil jadi 1-2 lagu
-                            // saja, antrian pemutaran ikut jadi sesempit itu, sehingga tombol
-                            // NEXT terlihat "tidak berfungsi" (cuma muter-muter di 1 lagu yang
-                            // sama / tidak ke mana-mana). Search di sini HARUSNYA cuma alat
-                            // bantu menemukan lagu -- begitu diputar, antrian tetap SELURUH
-                            // isi library (query dikosongkan tidak mengubah lagu apa yang lagi
-                            // main), supaya NEXT/PREV tetap bisa menjelajah seluruh library
-                            // seperti lazimnya.
                             vm.playSong(
                                 song,
                                 library
@@ -303,7 +232,6 @@ fun LibraryScreen(
                     )
                 }
 
-                // BARU (v1.2): tab PLAYLISTS.
                 LibraryTab.PLAYLISTS -> {
 
                     if (openPlaylist != null) {
@@ -345,10 +273,6 @@ fun LibraryScreen(
         }
     }
 
-    /* ============================================================
-     * DIALOG: NEW PLAYLIST
-     * ============================================================ */
-
     if (showCreatePlaylistDialog) {
         NamePromptDialog(
             title = stringResource(R.string.library_new_playlist_title),
@@ -363,10 +287,6 @@ fun LibraryScreen(
         )
     }
 
-    /* ============================================================
-     * DIALOG: ADD SONG TO PLAYLIST
-     * ============================================================ */
-
     val songPendingPlaylist = addToPlaylistSong
     if (songPendingPlaylist != null) {
         AddToPlaylistDialog(
@@ -380,15 +300,8 @@ fun LibraryScreen(
             onCreateNewAndPick = { name ->
                 vm.createPlaylist(name)
                 addToPlaylistSong = null
-                // Playlist baru langsung diisi lagu ini di panggilan berikutnya oleh
-                // pengguna (state playlists butuh 1 recomposition untuk terisi ID
-                // baru) -- cukup untuk patch kecil ini, pengguna tinggal ketuk "+"
-                // lagi sekali kalau ingin langsung isi lagu yang sama.
+
             }
         )
     }
 }
-
-/* ================================================================
- * DRILL-DOWN HEADER (dipakai untuk grup Album/Artist/Folder & Playlist)
- * ================================================================ */

@@ -35,9 +35,6 @@ import com.projectzero.tapeamp32.ui.theme.PanelBlackAlt
 import com.projectzero.tapeamp32.ui.theme.StrokeGold
 import com.projectzero.tapeamp32.ui.theme.TextMuted
 
-// Frequency-response curve overlay drawn on the Equalizer graph. Split out of
-// EqualizerScreen.kt.
-
 @Composable
 internal fun FrequencyCurveWithScale(
     gains: List<Double>,
@@ -64,11 +61,6 @@ internal fun FrequencyCurveWithScale(
                 val height = size.height
                 val midY = height / 2f
 
-                // ==============================================
-                // HORIZONTAL GRID LINES
-                // ==============================================
-
-                // +6dB line
                 drawLine(
                     color = Color(0xFF2A2D2D),
                     start = Offset(0f, height * 0.25f),
@@ -77,7 +69,6 @@ internal fun FrequencyCurveWithScale(
                     pathEffect = PathEffect.dashPathEffect(floatArrayOf(4f, 6f))
                 )
 
-                // 0dB center line
                 drawLine(
                     color = StrokeGold.copy(alpha = 0.6f),
                     start = Offset(0f, midY),
@@ -86,7 +77,6 @@ internal fun FrequencyCurveWithScale(
                     pathEffect = PathEffect.dashPathEffect(floatArrayOf(5f, 5f))
                 )
 
-                // -6dB line
                 drawLine(
                     color = Color(0xFF2A2D2D),
                     start = Offset(0f, height * 0.75f),
@@ -94,10 +84,6 @@ internal fun FrequencyCurveWithScale(
                     strokeWidth = 0.5.dp.toPx(),
                     pathEffect = PathEffect.dashPathEffect(floatArrayOf(4f, 6f))
                 )
-
-                // ==============================================
-                // VERTICAL GRID LINES
-                // ==============================================
 
                 val stepX = width / (gains.size - 1).coerceAtLeast(1)
                 for (i in gains.indices) {
@@ -108,10 +94,6 @@ internal fun FrequencyCurveWithScale(
                         strokeWidth = 0.3.dp.toPx()
                     )
                 }
-
-                // ==============================================
-                // FILL AREA UNDER CURVE
-                // ==============================================
 
                 val fillPath = Path()
                 gains.forEachIndexed { index, gain ->
@@ -134,10 +116,6 @@ internal fun FrequencyCurveWithScale(
                     color = GoldBright.copy(alpha = 0.08f)
                 )
 
-                // ==============================================
-                // CURVE LINE
-                // ==============================================
-
                 val path = Path()
                 gains.forEachIndexed { index, gain ->
                     val x = index * stepX
@@ -157,23 +135,17 @@ internal fun FrequencyCurveWithScale(
                     style = Stroke(width = 1.5.dp.toPx())
                 )
 
-                // ==============================================
-                // CURVE POINTS
-                // ==============================================
-
                 gains.forEachIndexed { index, gain ->
                     val x = index * stepX
                     val normalized = (gain.toFloat().coerceIn(-12f, 12f) / 12f)
                     val y = midY - normalized * (height / 2f) * 0.82f
 
-                    // Outer glow
                     drawCircle(
                         color = GoldBright.copy(alpha = 0.3f),
                         radius = 5.dp.toPx(),
                         center = Offset(x, y)
                     )
 
-                    // Inner point
                     drawCircle(
                         color = GoldBright,
                         radius = 2.5.dp.toPx(),
@@ -181,10 +153,6 @@ internal fun FrequencyCurveWithScale(
                     )
                 }
             }
-
-            // ====================================================
-            // DB LABELS
-            // ====================================================
 
             Column(
                 modifier = Modifier
@@ -199,10 +167,6 @@ internal fun FrequencyCurveWithScale(
         }
 
         Spacer(modifier = Modifier.height(3.dp))
-
-        // ========================================================
-        // FREQUENCY SCALE
-        // ========================================================
 
         Row(
             modifier = Modifier.fillMaxWidth(),

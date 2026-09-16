@@ -32,28 +32,10 @@ import coil.compose.AsyncImage
 import com.projectzero.tapeamp32.data.RadioBrowserStation
 import com.projectzero.tapeamp32.ui.theme.*
 
-/* ================================================================
- * BARU (fitur "Jelajahi Radio"): isi tab JELAJAHI di panel kiri layar
- * Streaming -- dipecah ke file sendiri (bukan ditumpuk di
- * StreamingFavoritesAndDialog.kt yang sudah panjang) supaya masing-masing
- * tetap fokus, sesuai pola modular project ini yang sudah memisahkan
- * StreamingScreen.kt / StreamingFavoritesAndDialog.kt / StreamingPlayerPanel.kt.
- * ================================================================ */
-
-// Daftar tag genre umum buat chip filter cepat -- di-hardcode (bukan fetch
-// dari /json/tags API) karena endpoint itu isinya RIBUAN tag (termasuk yang
-// aneh/typo/tidak berguna dari data yang di-crowdsource), jadi kurasi manual
-// jauh lebih berguna buat UI chip yang ruangnya terbatas daripada nampilkan
-// tag paling "populer" versi API yang belum tentu relevan buat pendengar awam.
 private val QUICK_GENRE_TAGS = listOf(
     "pop", "rock", "dangdut", "top 40", "jazz", "news", "classical", "chill"
 )
 
-// BARU (filter negara): daftar negara umum buat chip filter cepat -- sama
-// alasannya dengan QUICK_GENRE_TAGS di atas, di-kurasi manual (bukan fetch
-// /json/countries yang isinya ratusan negara termasuk yang jarang relevan).
-// null = "Semua Negara" (tanpa filter). Pair(label tampilan, kode ISO 2-huruf
-// yang dipakai Radio Browser API).
 private val QUICK_COUNTRIES: List<Pair<String, String?>> = listOf(
     "Semua" to null,
     "Indonesia" to "ID",
@@ -83,10 +65,6 @@ internal fun StreamingBrowseTab(
     modifier: Modifier = Modifier
 ) {
 
-    // BARU: begitu tab ini pertama kali masuk komposisi, minta ViewModel
-    // muat "radio populer" sebagai isi default -- lihat catatan di
-    // PlayerViewModel.loadPopularStationsIfEmpty() soal kenapa ini penting
-    // buat user yang tidak tahu nama radio apa pun.
     LaunchedEffect(Unit) {
         onLoadInitial()
     }
@@ -94,10 +72,6 @@ internal fun StreamingBrowseTab(
     Column(
         modifier = modifier.fillMaxSize()
     ) {
-
-        /*
-         * SEARCH BOX
-         */
 
         OutlinedTextField(
             value = query,
@@ -137,10 +111,6 @@ internal fun StreamingBrowseTab(
 
         Spacer(modifier = Modifier.height(6.dp))
 
-        /*
-         * GENRE CHIPS -- filter cepat tanpa perlu ketik
-         */
-
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(5.dp)
         ) {
@@ -169,14 +139,6 @@ internal fun StreamingBrowseTab(
         }
 
         Spacer(modifier = Modifier.height(6.dp))
-
-        /*
-         * BARU (filter negara): chip cepat pilih negara -- pola visual sama
-         * persis dengan chip genre di atas, ditaruh di baris terpisah supaya
-         * dua jenis filter ini tidak campur aduk di satu baris (genre vs
-         * negara itu konsep beda, disatukan cuma bakal bikin bingung mana
-         * yang mana).
-         */
 
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(5.dp)
@@ -207,10 +169,6 @@ internal fun StreamingBrowseTab(
         }
 
         Spacer(modifier = Modifier.height(6.dp))
-
-        /*
-         * RESULTS
-         */
 
         Box(modifier = Modifier.weight(1f)) {
             when {
@@ -281,11 +239,6 @@ private fun BrowseStationItem(
             .padding(vertical = 5.dp, horizontal = 4.dp)
     ) {
 
-        // Logo/favicon stasiun -- banyak stasiun di Radio Browser API tidak
-        // punya favicon terdaftar (string kosong), Coil otomatis fallback ke
-        // `error` composable di bawah kalau URL kosong/gagal dimuat, supaya
-        // tetap ada ikon placeholder yang konsisten dengan tema app (bukan
-        // kotak abu-abu default).
         Box(
             modifier = Modifier
                 .size(28.dp)

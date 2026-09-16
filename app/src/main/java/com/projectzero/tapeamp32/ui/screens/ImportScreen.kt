@@ -30,10 +30,6 @@ import com.projectzero.tapeamp32.R
 import com.projectzero.tapeamp32.ui.theme.*
 import com.projectzero.tapeamp32.viewmodel.PlayerViewModel
 
-/* ================================================================
- * IMPORT SCREEN
- * ================================================================ */
-
 @Composable
 fun ImportScreen(
     vm: PlayerViewModel,
@@ -63,19 +59,11 @@ fun ImportScreen(
             Alignment.CenterHorizontally
     ) {
 
-        /* ========================================================
-         * HEADER
-         * ======================================================== */
-
         ImportHeader()
 
         Spacer(
             modifier = Modifier.height(10.dp)
         )
-
-        /* ========================================================
-         * MAIN DROP / FOLDER AREA
-         * ======================================================== */
 
         Box(
             modifier = Modifier
@@ -103,19 +91,13 @@ fun ImportScreen(
                     Alignment.CenterHorizontally
             ) {
 
-                /* ================================================
-                 * FOLDER ICON
-                 * ================================================ */
-
                 Box(
                     modifier = Modifier
                         .size(70.dp)
                         .clip(
                             RoundedCornerShape(12.dp)
                         )
-                        // PATCH (klasik): ikon folder sebelumnya di atas panel
-                        // abu-abu gelap (#111515) -- diganti PanelBlackAlt + border
-                        // emas tipis supaya senada dengan panel gold lain.
+
                         .background(
                             PanelBlackAlt
                         )
@@ -153,10 +135,6 @@ fun ImportScreen(
                 Spacer(
                     modifier = Modifier.height(13.dp)
                 )
-
-                /* ================================================
-                 * PRIMARY TEXT
-                 * ================================================ */
 
                 Text(
                     text =
@@ -198,10 +176,6 @@ fun ImportScreen(
                     modifier = Modifier.height(12.dp)
                 )
 
-                /* ================================================
-                 * SECURITY / SCAN NOTE
-                 * ================================================ */
-
                 Text(
                     text =
                         stringResource(R.string.import_folder_only_note),
@@ -216,10 +190,6 @@ fun ImportScreen(
             modifier = Modifier.height(9.dp)
         )
 
-        /* ========================================================
-         * SINGLE FILE IMPORT
-         * ======================================================== */
-
         ImportFileButton(
             onClick = onPickFiles
         )
@@ -228,10 +198,6 @@ fun ImportScreen(
             modifier = Modifier.height(12.dp)
         )
 
-        /* ========================================================
-         * PROGRESS PANEL
-         * ======================================================== */
-
         ImportProgressPanel(
             isScanning = isScanning,
             scanProgress = scanProgress,
@@ -239,10 +205,6 @@ fun ImportScreen(
         )
     }
 }
-
-/* ================================================================
- * HEADER
- * ================================================================ */
 
 @Composable
 private fun ImportHeader() {
@@ -289,10 +251,6 @@ private fun ImportHeader() {
     }
 }
 
-/* ================================================================
- * SINGLE FILE BUTTON
- * ================================================================ */
-
 @Composable
 private fun ImportFileButton(
     onClick: () -> Unit
@@ -305,9 +263,7 @@ private fun ImportFileButton(
             .clip(
                 RoundedCornerShape(5.dp)
             )
-            // PATCH (klasik): tombol import file sebelumnya panel abu-abu
-            // (#101313) polos tanpa border -- diganti PanelBlackAlt + border
-            // emas supaya seragam dengan tombol/panel klasik lain.
+
             .background(
                 PanelBlackAlt
             )
@@ -370,10 +326,6 @@ private fun ImportFileButton(
     }
 }
 
-/* ================================================================
- * PROGRESS PANEL
- * ================================================================ */
-
 @Composable
 private fun ImportProgressPanel(
     isScanning: Boolean,
@@ -401,10 +353,6 @@ private fun ImportProgressPanel(
                 vertical = 8.dp
             )
     ) {
-
-        /* ========================================================
-         * LABEL + PERCENT
-         * ======================================================== */
 
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -445,10 +393,6 @@ private fun ImportProgressPanel(
             modifier = Modifier.height(6.dp)
         )
 
-        /* ========================================================
-         * PROGRESS BAR
-         * ======================================================== */
-
         LinearProgressIndicator(
             progress = {
                 if (isScanning) {
@@ -467,9 +411,7 @@ private fun ImportProgressPanel(
                 .clip(
                     RoundedCornerShape(3.dp)
                 ),
-            // PATCH (klasik): track abu-abu (#292C2C) diganti StrokeGold supaya
-            // progress bar terlihat seperti meter amplifier klasik, bukan progress
-            // bar Material biasa.
+
             color = GoldBright,
             trackColor = StrokeGold
         )
@@ -477,10 +419,6 @@ private fun ImportProgressPanel(
         Spacer(
             modifier = Modifier.height(5.dp)
         )
-
-        /* ========================================================
-         * STATUS
-         * ======================================================== */
 
         Text(
             text =
@@ -500,10 +438,6 @@ private fun ImportProgressPanel(
         )
     }
 }
-
-/* ================================================================
- * DASHED BORDER
- * ================================================================ */
 
 private fun Modifier.drawDashedBorder(
     color: Color,

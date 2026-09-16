@@ -36,9 +36,6 @@ import com.projectzero.tapeamp32.R
 import com.projectzero.tapeamp32.data.RadioStation
 import com.projectzero.tapeamp32.ui.theme.*
 
-// Favorites panel, edit-station dialog, and station list item composables for
-// the Streaming screen. Split out of StreamingScreen.kt.
-
 @Composable
 internal fun StreamingFavoritesPanel(
     stations: List<RadioStation>,
@@ -47,12 +44,7 @@ internal fun StreamingFavoritesPanel(
     onAddCustomUrl: (String) -> Unit,
     onDeleteCustomUrl: (RadioStation) -> Unit,
     onEditCustomStation: (RadioStation, String, String) -> Unit,
-    // BARU (fitur "Jelajahi Radio"): state & callback tab JELAJAHI, semuanya
-    // diteruskan dari StreamingScreen.kt (yang mengambilnya dari
-    // PlayerViewModel) -- panel ini sendiri tetap murni presentational,
-    // konsisten dengan pola callback eksplisit yang sudah dipakai untuk
-    // parameter-parameter di atas (bukan menerima `vm: PlayerViewModel`
-    // langsung).
+
     browseQuery: String,
     browseResults: List<com.projectzero.tapeamp32.data.RadioBrowserStation>,
     browseLoading: Boolean,
@@ -68,14 +60,8 @@ internal fun StreamingFavoritesPanel(
     modifier: Modifier = Modifier
 ) {
 
-    // BARU (fitur "Jelajahi Radio"): 0 = tab FAVORIT (perilaku lama, tidak
-    // diubah), 1 = tab JELAJAHI (baru). State tab ini lokal ke panel (tidak
-    // perlu dipersist -- wajar balik ke FAVORIT tiap kali layar Streaming
-    // dibuka ulang).
     var selectedTabIndex by remember { mutableStateOf(0) }
 
-    // BARU (fitur "edit stream"): stasiun yang sedang diedit (nama + URL) lewat
-    // dialog. null berarti dialog sedang tidak ditampilkan.
     var stationBeingEdited by remember {
         mutableStateOf<RadioStation?>(null)
     }
@@ -104,10 +90,6 @@ internal fun StreamingFavoritesPanel(
             )
             .padding(8.dp)
     ) {
-
-        /*
-         * BARU (fitur "Jelajahi Radio"): TAB SWITCHER FAVORIT / JELAJAHI
-         */
 
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -149,10 +131,6 @@ internal fun StreamingFavoritesPanel(
 
         } else {
 
-        /*
-         * HEADER
-         */
-
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -167,10 +145,6 @@ internal fun StreamingFavoritesPanel(
         Spacer(
             modifier = Modifier.height(5.dp)
         )
-
-        /*
-         * STATION LIST
-         */
 
         if (stations.isEmpty()) {
 
@@ -207,8 +181,7 @@ internal fun StreamingFavoritesPanel(
                     onClick = {
                         onSelect(station)
                     },
-                    // Cuma stasiun custom (ditambahkan lewat "ADD STREAM URL") yang
-                    // boleh dihapus/diganti nama -- stasiun bawaan/daftar favorit tetap.
+
                     onDelete =
                         if (station.id.startsWith("custom_"))
                             { { onDeleteCustomUrl(station) } }
@@ -224,12 +197,6 @@ internal fun StreamingFavoritesPanel(
         }
 
         }
-
-        /*
-         * ============================================================
-         * ADD CUSTOM STREAM URL
-         * ============================================================
-         */
 
         Spacer(
             modifier = Modifier.height(6.dp)
@@ -333,13 +300,7 @@ internal fun StreamingFavoritesPanel(
             )
         }
 
-        } // end else (tab FAVORIT)
-
-        /*
-         * ============================================================
-         * EDIT DIALOG (custom stations only) -- nama + URL stream
-         * ============================================================
-         */
+        }
 
         val stationToEdit = stationBeingEdited
 
@@ -360,14 +321,6 @@ internal fun StreamingFavoritesPanel(
     }
 }
 
-/* ================================================================
- * EDIT STATION DIALOG (name + stream URL)
- * ================================================================ */
-
-// BARU (fitur "edit stream"): dialog berisi dua text field untuk mengganti
-// nama DAN URL stream stasiun custom (sebelumnya cuma nama lewat
-// RenameStationDialog). Nilai awal kedua field diisi dari data saat ini
-// supaya user tinggal edit, bukan ketik ulang dari kosong.
 @Composable
 internal fun EditStationDialog(
     currentName: String,
@@ -491,10 +444,6 @@ internal fun EditStationDialog(
     )
 }
 
-/* ================================================================
- * SINGLE STATION
- * ================================================================ */
-
 @Composable
 internal fun StreamingStationItem(
     station: RadioStation,
@@ -543,10 +492,6 @@ internal fun StreamingStationItem(
         verticalAlignment =
             Alignment.CenterVertically
     ) {
-
-        /*
-         * RADIO ICON
-         */
 
         Box(
             modifier = Modifier
@@ -607,12 +552,7 @@ internal fun StreamingStationItem(
 
             Text(
                 text =
-                    // FIX (bug "bitrate selalu 0"): bitrate stasiun cuma diketahui
-                    // SETELAH stream-nya benar-benar tersambung (lihat
-                    // PlayerManager.streamBitrateKbps di panel Stream Information),
-                    // bukan dari station.bitrateKbps yang statis & selalu 0 untuk
-                    // stasiun custom -- daripada tampil "0 kbps" yang menyesatkan
-                    // di badge kecil ini, tampilkan "--" selama belum diketahui.
+
                     if (station.bitrateKbps > 0)
                         "${station.bitrateKbps} kbps"
                     else
@@ -623,10 +563,6 @@ internal fun StreamingStationItem(
                 maxLines = 1
             )
         }
-
-        /*
-         * RENAME (custom stations only)
-         */
 
         if (onRename != null) {
 
@@ -649,10 +585,6 @@ internal fun StreamingStationItem(
             )
         }
 
-        /*
-         * DELETE (custom stations only)
-         */
-
         if (onDelete != null) {
 
             IconButton(
@@ -674,10 +606,6 @@ internal fun StreamingStationItem(
             )
         }
 
-        /*
-         * ACTIVE INDICATOR
-         */
-
         if (selected) {
 
             Box(
@@ -694,15 +622,6 @@ internal fun StreamingStationItem(
         }
     }
 }
-
-/* ================================================================
- * STREAM PLAYER PANEL
- * ================================================================ */
-
-/* ================================================================
- * BARU (fitur "Jelajahi Radio"): tombol tab kecil buat switcher
- * FAVORIT / JELAJAHI di atas StreamingFavoritesPanel.
- * ================================================================ */
 
 @Composable
 private fun StreamingTabButton(

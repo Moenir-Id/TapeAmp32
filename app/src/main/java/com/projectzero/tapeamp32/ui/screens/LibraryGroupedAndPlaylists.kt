@@ -23,9 +23,6 @@ import com.projectzero.tapeamp32.data.Playlist
 import com.projectzero.tapeamp32.data.Song
 import com.projectzero.tapeamp32.ui.theme.*
 
-// Grouped (album/artist) list view and the playlists list view. Split out of
-// LibraryScreen.kt.
-
 @Composable
 internal fun GroupOrDrillDown(
     groupedData: Map<String, List<Song>>,
@@ -49,10 +46,6 @@ internal fun GroupOrDrillDown(
         )
     }
 }
-
-/* ================================================================
- * GROUPED VIEW
- * ================================================================ */
 
 @Composable
 internal fun GroupedLibraryView(
@@ -81,17 +74,12 @@ internal fun GroupedLibraryView(
             LibraryGroupRow(
                 title = entry.key,
                 count = entry.value.size,
-                // BARU (v1.2): grup sekarang bisa diketuk -- "quick access"
-                // langsung ke isi grup itu.
+
                 onClick = { onGroupClick(entry.key) }
             )
         }
     }
 }
-
-/* ================================================================
- * GROUP ROW
- * ================================================================ */
 
 @Composable
 internal fun LibraryGroupRow(
@@ -138,8 +126,6 @@ internal fun LibraryGroupRow(
             )
         }
 
-        // PATCH (klasik): divider grup album/artis diganti StrokeGold tipis
-        // (sebelumnya abu-abu #292C2C).
         HorizontalDivider(
             color = StrokeGold.copy(alpha = 0.45f),
             thickness = 0.6.dp,
@@ -149,10 +135,6 @@ internal fun LibraryGroupRow(
         )
     }
 }
-
-/* ================================================================
- * BARU (v1.2) -- DAFTAR PLAYLIST (tab PLAYLISTS, sebelum drill-down)
- * ================================================================ */
 
 @Composable
 internal fun PlaylistsListView(
@@ -239,7 +221,3 @@ internal fun PlaylistsListView(
         }
     }
 }
-
-/* ================================================================
- * BARU (v1.2) -- DIALOG: BERI NAMA (dipakai untuk New Playlist)
- * ================================================================ */

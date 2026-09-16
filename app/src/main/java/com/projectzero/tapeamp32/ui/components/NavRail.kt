@@ -51,7 +51,7 @@ private val navItems = listOf(
         R.string.navrail_import,
         Icons.Filled.Download
     ),
-    // FITUR BARU: tab lirik sendiri, terpisah dari PLAYER, sesuai permintaan (bukan overlay).
+
     NavItem(
         Screen.LYRICS,
         R.string.navrail_lyrics,
@@ -75,10 +75,7 @@ fun NavRail(
     Column(
         modifier = modifier
             .fillMaxHeight()
-            // BARU (v1.5): lebih ramping + ikon saja (tanpa label teks) saat window
-            // sedang dipersempit sistem (Split Screen/Multi-Window) -- lihat isCompact
-            // di MainActivity.AppRoot -- supaya rail navigasi tidak memakan porsi besar
-            // dari lebar yang sudah terbatas.
+
             .width(if (isCompact) 52.dp else 82.dp)
             .background(
                 Brush.horizontalGradient(
@@ -99,12 +96,6 @@ fun NavRail(
             ),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
-        /*
-         * ============================================================
-         * NAVIGATION ITEMS
-         * ============================================================
-         */
 
         navItems.forEach { item ->
 
@@ -130,10 +121,6 @@ fun NavRail(
     }
 }
 
-/* ================================================================
- * SINGLE NAV ITEM
- * ================================================================ */
-
 @Composable
 private fun NavRailItem(
     item: NavItem,
@@ -152,25 +139,12 @@ private fun NavRailItem(
         contentAlignment = Alignment.Center
     ) {
 
-        /*
-         * ------------------------------------------------------------
-         * ACTIVE PLATE -- BARU (patch "Skin Klasik NavRail/Toggle/Icon")
-         * ------------------------------------------------------------
-         *
-         * Ambience glow lama diganti PLAT LOGAM bergaya tombol panel
-         * hardware klasik: kotak bersudut tumpul dengan bezel gold tipis
-         * + gradasi metalik gelap, supaya nav item aktif terasa seperti
-         * tombol fisik yang "ditekan", bukan cuma cahaya samar di
-         * belakang icon.
-         */
-
         if (selected) {
 
             Box(
                 modifier = Modifier
                     .size(
-                        // BARU (v1.5): plat aktif sedikit lebih ramping saat isCompact,
-                        // sejalan dengan lebar rail 52dp (bukan 82dp).
+
                         width = if (isCompact) 42.dp else 58.dp,
                         height = 72.dp
                     )
@@ -208,18 +182,6 @@ private fun NavRailItem(
             verticalArrangement =
                 Arrangement.Center
         ) {
-
-            /*
-             * --------------------------------------------------------
-             * ICON
-             * --------------------------------------------------------
-             * PATCH: icon diperbesar (23/25dp -> 25/29dp) dan plat kotak
-             * di belakangnya diberi bezel logam tipis sendiri (bukan
-             * cuma kotak transparan) supaya konsisten dengan gaya
-             * "tombol klasik" di layar lain -- baik saat aktif maupun
-             * tidak.
-             * --------------------------------------------------------
-             */
 
             Box(
                 modifier = Modifier
@@ -260,16 +222,6 @@ private fun NavRailItem(
                 modifier = Modifier.height(3.dp)
             )
 
-            /*
-             * --------------------------------------------------------
-             * LABEL
-             * --------------------------------------------------------
-             * BARU (v1.5): disembunyikan saat isCompact (Split Screen/Multi-
-             * Window) -- di rail selebar 52dp, label teks penuh gampang
-             * terpotong/wrap; ikon saja sudah cukup jelas menunjukkan tab.
-             * --------------------------------------------------------
-             */
-
             if (!isCompact) {
                 Text(
                     text = stringResource(item.labelRes),
@@ -291,15 +243,6 @@ private fun NavRailItem(
                     maxLines = 1
                 )
             }
-
-            /*
-             * --------------------------------------------------------
-             * ACTIVE INDICATOR
-             * --------------------------------------------------------
-             *
-             * Garis kecil emas di bawah label.
-             * Bukan box, sehingga tetap mengikuti mockup.
-             */
 
             Spacer(
                 modifier = Modifier.height(4.dp)
