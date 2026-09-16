@@ -525,6 +525,8 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
             val restoredBalance = runCatching { settingsRepository.stereoBalance.first() }.getOrDefault(0f).toDouble()
             val restoredExpansion = runCatching { settingsRepository.stereoExpansion.first() }.getOrDefault(1f).toDouble()
             val restoredMono = runCatching { settingsRepository.monoStereoOn.first() }.getOrDefault(false)
+            // BARU (fix bug "Shuffle selalu balik OFF tiap app dibuka ulang")
+            val restoredShuffle = runCatching { settingsRepository.shuffleOn.first() }.getOrDefault(false)
             // BARU (patch "headroom slider")
             val restoredHeadroomSafetyRatio = runCatching { settingsRepository.headroomSafetyRatio.first() }.getOrDefault(0.3f).toDouble()
 
@@ -534,6 +536,12 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
             _stereoBalance.value = restoredBalance
             _stereoExpansion.value = restoredExpansion
             _monoStereoOn.value = restoredMono
+            // BARU: cukup set state-nya di sini -- TIDAK perlu reorder queue
+            // manual di titik ini, karena syncQueueWithLibrary() (dipanggil
+            // saat library selesai di-scan, terjadi setelah ini) SUDAH
+            // mengecek _shuffleOn.value dan otomatis mengacak queue kalau true
+            // (lihat fix bug shuffle sebelumnya di fungsi itu).
+            _shuffleOn.value = restoredShuffle
             _headroomSafetyRatio.value = restoredHeadroomSafetyRatio
 
             playerManager.setVocalEnabled(restoredVocalOn)
@@ -1093,6 +1101,8 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         val shuffled = ShuffleQueue.shuffled(_library.value)
         _queue.value = shuffled
         _shuffleOn.value = true
+        // BARU (fix bug shuffle tidak persist)
+        persistShuffleOn(true)
         queueIndex = 0
         if (shuffled.isNotEmpty()) {
             pickSkinFor(shuffled[0])
@@ -1134,6 +1144,8 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         // tombol Shuffle "memaksa" pindah balik ke Library dengan sendirinya.
         val turningOn = !_shuffleOn.value
         _shuffleOn.value = turningOn
+        // BARU (fix bug shuffle tidak persist)
+        persistShuffleOn(turningOn)
 
         val newQueue = if (turningOn) {
             preShuffleQueue = _queue.value
@@ -1148,8 +1160,13 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         // cuma urutan antrian di sekitarnya yang berubah, bukan lagu yang sedang jalan.
         val current = playerManager.currentSong.value
         val idx = current?.let { c -> newQueue.indexOfFirst { it.id == c.id } }?.takeIf { it >= 0 } ?: 0
+        // FIX (bug "lagu kesendat sesaat tiap Shuffle ditekan"): dulu pakai
+        // playerManager.setQueue() di sini, yang selalu reprepare SELURUH
+        // timeline (termasuk item yang sedang diputar) -- sekarang pakai
+        // reorderQueue() yang cuma menata ulang posisi lewat moveMediaItem(),
+        // tidak mengganggu playback yang sedang berjalan sama sekali.
         queueIndex = idx
-        playerManager.setQueue(newQueue, idx, playerManager.positionMs.value, playWhenReady = playerManager.isPlaying.value)
+        playerManager.reorderQueue(newQueue)
     }
 
     /**
@@ -1199,6 +1216,12 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     private val _browseError = MutableStateFlow<String?>(null)
     val browseError: StateFlow<String?> = _browseError.asStateFlow()
 
+    // BARU (filter negara): null berarti "Semua Negara" (perilaku lama).
+    // Diisi kode negara ISO 2-huruf (mis. "ID", "MY", "US") kalau user pilih
+    // salah satu chip negara di StreamingBrowseTab.kt.
+    private val _browseCountry = MutableStateFlow<String?>(null)
+    val browseCountry: StateFlow<String?> = _browseCountry.asStateFlow()
+
     private var browseSearchJob: kotlinx.coroutines.Job? = null
 
     fun updateBrowseQuery(query: String) {
@@ -1244,7 +1267,9 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
             _browseLoading.value = true
             _browseError.value = null
             val result = runCatching {
-                withContext(Dispatchers.IO) { radioBrowserRepository.searchStations(query) }
+                withContext(Dispatchers.IO) {
+                    radioBrowserRepository.searchStations(query, countryCode = _browseCountry.value)
+                }
             }
             _browseLoading.value = false
             result.onSuccess { stations ->
@@ -1264,13 +1289,50 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
             _browseLoading.value = true
             _browseError.value = null
             val result = runCatching {
-                withContext(Dispatchers.IO) { radioBrowserRepository.getStationsByTag(tag) }
+                withContext(Dispatchers.IO) {
+                    radioBrowserRepository.getStationsByTag(tag, countryCode = _browseCountry.value)
+                }
             }
             _browseLoading.value = false
             result.onSuccess { stations ->
                 _browseResults.value = stations
                 if (stations.isEmpty()) {
                     _browseError.value = "Tidak ada hasil untuk tag \"$tag\"."
+                }
+            }.onFailure {
+                _browseError.value = "Tidak bisa memuat radio. Cek koneksi internet."
+            }
+        }
+    }
+
+    // BARU (filter negara): dipanggil saat user tap chip negara. [countryCode]
+    // null berarti user pilih "Semua Negara" -- kalau lagi ada kata kunci
+    // pencarian aktif, filter negara baru ini ikut dipakai ulang buat
+    // re-search dengan kata kunci yang sama (bukan reset ke kosong); kalau
+    // tidak ada kata kunci, tampilkan stasiun populer di negara itu.
+    fun filterBrowseByCountry(countryCode: String?) {
+        _browseCountry.value = countryCode
+        browseSearchJob?.cancel()
+        val currentQuery = _browseQuery.value
+        browseSearchJob = viewModelScope.launch {
+            _browseLoading.value = true
+            _browseError.value = null
+            val result = runCatching {
+                withContext(Dispatchers.IO) {
+                    if (currentQuery.isNotBlank()) {
+                        radioBrowserRepository.searchStations(currentQuery, countryCode = countryCode)
+                    } else if (countryCode.isNullOrBlank()) {
+                        radioBrowserRepository.getPopularStations()
+                    } else {
+                        radioBrowserRepository.getStationsByCountry(countryCode)
+                    }
+                }
+            }
+            _browseLoading.value = false
+            result.onSuccess { stations ->
+                _browseResults.value = stations
+                if (stations.isEmpty()) {
+                    _browseError.value = "Tidak ada hasil untuk negara ini."
                 }
             }.onFailure {
                 _browseError.value = "Tidak bisa memuat radio. Cek koneksi internet."
@@ -1872,6 +1934,15 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         _monoStereoOn.value = monoOn
         playerManager.setMonoStereo(monoOn)
         viewModelScope.launch { settingsRepository.setBool(SettingsKeys.MONO_STEREO_ON, monoOn) }
+    }
+
+    // BARU (fix bug "Shuffle selalu balik OFF tiap app dibuka ulang"): helper
+    // kecil dipanggil dari shuffleAll() & toggleShuffle() -- dipisah jadi
+    // fungsi sendiri (bukan inline viewModelScope.launch di 2 tempat) supaya
+    // kalau nanti ada tempat ketiga yang mengubah _shuffleOn, tinggal panggil
+    // ini juga, tidak lupa persist.
+    private fun persistShuffleOn(value: Boolean) {
+        viewModelScope.launch { settingsRepository.setBool(SettingsKeys.SHUFFLE_ON, value) }
     }
 
     // BARU (patch "headroom slider"): setter untuk slider "MAX LOUDNESS <-> SAFE

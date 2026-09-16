@@ -69,6 +69,13 @@ class PlayerManager private constructor(private val context: Context) {
     // benar-benar mengikuti siklus hidup layar, bukan siklus hidup singleton ini.
     val usbDacObserver = UsbDacObserver(context)
 
+    // BARU (fix bug "kadang lagu tiba-tiba berhenti, harus tekan Play lagi"):
+    // lihat onPlayerError()/onIsPlayingChanged() di buildPlayer() untuk detail
+    // lengkap -- flag ini yang memastikan auto-retry cuma dicoba SEKALI per
+    // rentang waktu sebelum sukses playing lagi, bukan infinite-retry-loop
+    // kalau errornya memang permanen.
+    private var hasRetriedAfterError = false
+
     private val _vuLevels = MutableStateFlow(0f to 0f)
     val vuLevels: StateFlow<Pair<Float, Float>> = _vuLevels
 
@@ -341,6 +348,16 @@ class PlayerManager private constructor(private val context: Context) {
                 if (!isPlaying) {
                     _vuLevels.value = 0f to 0f
                 }
+                // BARU (bug "kadang lagu tiba-tiba berhenti, harus tekan Play
+                // lagi"): begitu playback beneran jalan lagi dengan sukses (baik
+                // itu setelah auto-retry di onPlayerError() di bawah, atau
+                // memang lagi normal muter lagu baru), reset jatah retry --
+                // supaya kalau ada error LAGI nanti (lagu lain/waktu lain), tetap
+                // dapat 1x kesempatan auto-retry juga, bukan cuma sekali seumur
+                // hidup sesi app ini.
+                if (isPlaying) {
+                    hasRetriedAfterError = false
+                }
             }
 
             override fun onPlaybackStateChanged(playbackState: Int) {
@@ -392,7 +409,33 @@ class PlayerManager private constructor(private val context: Context) {
                 // penjelasan apa pun ke user. Sekarang pesannya ditangkap supaya bisa
                 // ditampilkan di UI (lihat PlayerViewModel.lastError / PlayerScreen).
                 _lastError.value = error.errorCodeName + ": " + (error.message ?: "Playback gagal")
-                exo.stop()
+
+                // FIX (bug "kadang lagu tiba-tiba berhenti sendiri, harus tekan
+                // Play lagi"): sebelumnya SELALU exo.stop() di sini tanpa
+                // pengecualian -- ExoPlayer masuk STATE_IDLE dan diam permanen
+                // di situ sampai user pencet Play manual (yang baru memicu
+                // prepare() ulang lewat playPause() di atas). Banyak
+                // PlaybackException itu TRANSIENT/sesaat (glitch decoder,
+                // hiccup di audio processor custom seperti limiter/EQ saat
+                // memproses konten tertentu, dll) -- bukan berarti file/stream-nya
+                // benar-benar rusak permanen. Sekarang dicoba auto-retry SEKALI:
+                // prepare() ulang dari item & posisi yang sama secara otomatis,
+                // tanpa perlu user menekan apa pun. Kalau errornya terjadi LAGI
+                // sebelum sempat playing sukses (lihat reset di
+                // onIsPlayingChanged di atas) -- berarti bukan sekadar glitch
+                // sesaat, baru dibiarkan diam di STATE_IDLE seperti perilaku
+                // lama, supaya tidak infinite-retry-loop kalau file/stream-nya
+                // memang benar-benar rusak/hilang/tidak didukung.
+                if (!hasRetriedAfterError) {
+                    hasRetriedAfterError = true
+                    val retryIndex = exo.currentMediaItemIndex
+                    val retryPositionMs = exo.currentPosition
+                    exo.seekTo(retryIndex, retryPositionMs)
+                    exo.prepare()
+                    exo.playWhenReady = true
+                } else {
+                    exo.stop()
+                }
             }
         })
 
@@ -586,6 +629,58 @@ class PlayerManager private constructor(private val context: Context) {
         player.setMediaItems(mediaItems, safeIndex, startPositionMs.coerceAtLeast(0L))
         player.prepare()
         player.playWhenReady = playWhenReady
+    }
+
+    /**
+     * BARU (fix bug "lagu kesendat sesaat tiap kali tombol Shuffle ditekan"):
+     * sebelumnya toggleShuffle() di PlayerViewModel memanggil setQueue() di
+     * atas buat menerapkan urutan baru -- setQueue() SELALU memanggil
+     * player.setMediaItems() + player.prepare(), yang artinya item yang
+     * SEDANG DIPUTAR pun ikut di-reprepare/rebuffer dari nol, walau isinya
+     * cuma pindah urutan sekitar (bukan ganti lagu). Itu sebabnya kedengaran
+     * "kesendat sesaat" tiap Shuffle ditekan.
+     *
+     * Fungsi ini menata ulang urutan lewat player.moveMediaItem() -- API
+     * ExoPlayer yang MEMANG dirancang khusus buat mengubah posisi item di
+     * timeline TANPA menyentuh state playback item mana pun (termasuk yang
+     * sedang aktif), beda total dari setMediaItems() yang selalu menghitung
+     * ulang seluruh timeline dari awal. Dicocokkan berdasarkan mediaId (id
+     * lagu, dibuat di buildMediaItem() di atas) -- bukan index polos --
+     * supaya pencocokan tetap benar walau urutan lama & baru sudah beda jauh.
+     *
+     * CATATAN: cuma dipakai untuk RE-ORDER (jumlah lagu sebelum & sesudah
+     * harus SAMA PERSIS) -- bukan buat menambah/menghapus lagu dari antrian.
+     * Kalau jumlahnya beda (harusnya tidak pernah terjadi dari toggleShuffle,
+     * tapi dijaga untuk keamanan), fallback ke setQueue() biasa supaya tidak
+     * menghasilkan timeline yang salah/korup.
+     */
+    fun reorderQueue(newSongs: List<Song>) {
+        if (newSongs.isEmpty()) return
+
+        if (newSongs.size != player.mediaItemCount) {
+            val current = _currentSong.value
+            val idx = current?.let { c -> newSongs.indexOfFirst { it.id == c.id } }?.takeIf { it >= 0 } ?: 0
+            setQueue(newSongs, idx, player.currentPosition, playWhenReady = player.isPlaying)
+            return
+        }
+
+        songsById = newSongs.associateBy { it.id.toString() }
+
+        for (targetIndex in newSongs.indices) {
+            val targetId = newSongs[targetIndex].id.toString()
+            var foundIndex = -1
+            for (i in targetIndex until player.mediaItemCount) {
+                if (player.getMediaItemAt(i).mediaId == targetId) {
+                    foundIndex = i
+                    break
+                }
+            }
+            if (foundIndex != -1 && foundIndex != targetIndex) {
+                player.moveMediaItem(foundIndex, targetIndex)
+            }
+        }
+
+        _currentQueueIndex.value = player.currentMediaItemIndex
     }
 
     /**

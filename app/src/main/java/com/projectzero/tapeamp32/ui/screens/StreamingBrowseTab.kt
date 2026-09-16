@@ -49,15 +49,34 @@ private val QUICK_GENRE_TAGS = listOf(
     "pop", "rock", "dangdut", "top 40", "jazz", "news", "classical", "chill"
 )
 
+// BARU (filter negara): daftar negara umum buat chip filter cepat -- sama
+// alasannya dengan QUICK_GENRE_TAGS di atas, di-kurasi manual (bukan fetch
+// /json/countries yang isinya ratusan negara termasuk yang jarang relevan).
+// null = "Semua Negara" (tanpa filter). Pair(label tampilan, kode ISO 2-huruf
+// yang dipakai Radio Browser API).
+private val QUICK_COUNTRIES: List<Pair<String, String?>> = listOf(
+    "Semua" to null,
+    "Indonesia" to "ID",
+    "Malaysia" to "MY",
+    "Singapura" to "SG",
+    "Jepang" to "JP",
+    "Korea" to "KR",
+    "Amerika" to "US",
+    "Inggris" to "GB",
+    "Australia" to "AU"
+)
+
 @Composable
 internal fun StreamingBrowseTab(
     query: String,
     results: List<RadioBrowserStation>,
     isLoading: Boolean,
     errorMessage: String?,
+    selectedCountry: String?,
     onQueryChange: (String) -> Unit,
     onSearch: (String) -> Unit,
     onTagSelect: (String) -> Unit,
+    onCountrySelect: (String?) -> Unit,
     onLoadInitial: () -> Unit,
     onPlayStation: (RadioBrowserStation) -> Unit,
     onAddToFavorites: (RadioBrowserStation) -> Unit,
@@ -141,6 +160,44 @@ internal fun StreamingBrowseTab(
                     Text(
                         text = tag.uppercase(),
                         color = GoldBright,
+                        fontFamily = MonoFont,
+                        fontSize = 8.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(6.dp))
+
+        /*
+         * BARU (filter negara): chip cepat pilih negara -- pola visual sama
+         * persis dengan chip genre di atas, ditaruh di baris terpisah supaya
+         * dua jenis filter ini tidak campur aduk di satu baris (genre vs
+         * negara itu konsep beda, disatukan cuma bakal bikin bingung mana
+         * yang mana).
+         */
+
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(5.dp)
+        ) {
+            items(QUICK_COUNTRIES) { (label, code) ->
+                val isSelected = selectedCountry == code
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(if (isSelected) Gold else Color(0xFF1A1D1D))
+                        .border(
+                            width = 1.dp,
+                            color = if (isSelected) Gold else StrokeGold.copy(alpha = 0.4f),
+                            shape = RoundedCornerShape(20.dp)
+                        )
+                        .clickable { onCountrySelect(code) }
+                        .padding(horizontal = 10.dp, vertical = 5.dp)
+                ) {
+                    Text(
+                        text = label.uppercase(),
+                        color = if (isSelected) Color.Black else GoldBright,
                         fontFamily = MonoFont,
                         fontSize = 8.sp,
                         fontWeight = FontWeight.Bold

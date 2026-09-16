@@ -152,6 +152,7 @@ fun StreamingScreen(
     val browseResults by vm.browseResults.collectAsStateWithLifecycle()
     val browseLoading by vm.browseLoading.collectAsStateWithLifecycle()
     val browseError by vm.browseError.collectAsStateWithLifecycle()
+    val browseCountry by vm.browseCountry.collectAsStateWithLifecycle()
 
     // Diresolve di sini (bukan di dalam lambda onAddCustomUrl di bawah) karena
     // stringResource() cuma bisa dipanggil dari konteks @Composable, sedangkan
@@ -289,9 +290,11 @@ fun StreamingScreen(
             browseResults = browseResults,
             browseLoading = browseLoading,
             browseError = browseError,
+            browseCountry = browseCountry,
             onBrowseQueryChange = { vm.updateBrowseQuery(it) },
             onBrowseSearch = { vm.searchBrowseStations(it) },
             onBrowseTagSelect = { vm.filterBrowseByTag(it) },
+            onBrowseCountrySelect = { vm.filterBrowseByCountry(it) },
             onBrowseLoadInitial = { vm.loadPopularStationsIfEmpty() },
             onPlayFoundStation = { found ->
                 // FIX (bug "panel detail selalu Prambors"): set `selected`

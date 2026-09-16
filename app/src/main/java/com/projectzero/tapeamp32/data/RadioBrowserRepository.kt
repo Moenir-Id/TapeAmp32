@@ -125,18 +125,40 @@ class RadioBrowserRepository {
         return parseStations(fetchFromAnyMirror(path))
     }
 
-    suspend fun searchStations(query: String, limit: Int = 40): List<RadioBrowserStation> {
-        if (query.isBlank()) return emptyList()
-        val encoded = java.net.URLEncoder.encode(query, "UTF-8")
-        val path = "/json/stations/search?name=$encoded&limit=$limit&hidebroken=true" +
-            "&order=clickcount&reverse=true"
+    // BARU (filter negara): dipanggil saat user pilih chip negara tanpa ada
+    // kata kunci pencarian -- beda dari getPopularStations() yang defaultnya
+    // selalu "ID", ini dipanggil eksplisit dengan kode negara APA PUN yang
+    // dipilih user dari chip.
+    suspend fun getStationsByCountry(countryCode: String, limit: Int = 40): List<RadioBrowserStation> {
+        val path = "/json/stations/bycountrycodeexact/$countryCode" +
+            "?order=clickcount&reverse=true&limit=$limit&hidebroken=true"
         return parseStations(fetchFromAnyMirror(path))
     }
 
-    suspend fun getStationsByTag(tag: String, limit: Int = 40): List<RadioBrowserStation> {
-        val encoded = java.net.URLEncoder.encode(tag, "UTF-8")
-        val path = "/json/stations/bytag/$encoded?limit=$limit&hidebroken=true" +
+    // BARU (filter negara): [countryCode] null/blank berarti cari di SEMUA
+    // negara (perilaku lama, tidak berubah). Kalau diisi, hasil pencarian nama
+    // ikut disaring ke negara itu saja -- Radio Browser API mendukung kombinasi
+    // parameter `name` + `countrycode` sekaligus di endpoint /search yang sama.
+    suspend fun searchStations(query: String, countryCode: String? = null, limit: Int = 40): List<RadioBrowserStation> {
+        if (query.isBlank()) return emptyList()
+        val encoded = java.net.URLEncoder.encode(query, "UTF-8")
+        var path = "/json/stations/search?name=$encoded&limit=$limit&hidebroken=true" +
             "&order=clickcount&reverse=true"
+        if (!countryCode.isNullOrBlank()) {
+            path += "&countrycode=${java.net.URLEncoder.encode(countryCode, "UTF-8")}"
+        }
+        return parseStations(fetchFromAnyMirror(path))
+    }
+
+    // BARU (filter negara): sama seperti searchStations(), [countryCode]
+    // opsional -- null/blank berarti tag ini dicari di semua negara.
+    suspend fun getStationsByTag(tag: String, countryCode: String? = null, limit: Int = 40): List<RadioBrowserStation> {
+        val encoded = java.net.URLEncoder.encode(tag, "UTF-8")
+        var path = "/json/stations/bytag/$encoded?limit=$limit&hidebroken=true" +
+            "&order=clickcount&reverse=true"
+        if (!countryCode.isNullOrBlank()) {
+            path += "&countrycode=${java.net.URLEncoder.encode(countryCode, "UTF-8")}"
+        }
         return parseStations(fetchFromAnyMirror(path))
     }
 }

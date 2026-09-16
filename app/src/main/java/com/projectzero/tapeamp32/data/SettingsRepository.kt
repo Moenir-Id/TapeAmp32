@@ -78,6 +78,11 @@ object SettingsKeys {
     val STEREO_EXPANSION = floatPreferencesKey("stereo_expansion")
     val MONO_STEREO_ON = booleanPreferencesKey("mono_stereo_on")
 
+    // BARU (fix bug "toggle Shuffle selalu balik OFF tiap app dibuka ulang"):
+    // sebelumnya _shuffleOn di PlayerViewModel cuma state di memori, tidak
+    // pernah ditulis/dibaca dari DataStore sama sekali.
+    val SHUFFLE_ON = booleanPreferencesKey("shuffle_on")
+
     // BARU (patch "headroom slider"): rasio auto-preamp/headroom management di
     // ParametricEqAudioProcessor (dulu `private val HEADROOM_SAFETY_RATIO` HARDCODE
     // 0.5, tidak dipersist & tidak ada UI-nya sama sekali). Dipersist sama persis
@@ -191,6 +196,9 @@ class SettingsRepository(private val context: Context) {
     val stereoBalance: Flow<Float> = safeDataStore.map { it[SettingsKeys.STEREO_BALANCE] ?: 0f }
     val stereoExpansion: Flow<Float> = safeDataStore.map { it[SettingsKeys.STEREO_EXPANSION] ?: 1f }
     val monoStereoOn: Flow<Boolean> = safeDataStore.map { it[SettingsKeys.MONO_STEREO_ON] ?: false }
+
+    // BARU (fix bug shuffle tidak persist)
+    val shuffleOn: Flow<Boolean> = safeDataStore.map { it[SettingsKeys.SHUFFLE_ON] ?: false }
 
     // BARU (patch "headroom slider"): default 0.3 -- HARUS disamakan persis dengan
     // default `headroomSafetyRatio` di ParametricEqAudioProcessor, supaya app yang
