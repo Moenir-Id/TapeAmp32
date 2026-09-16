@@ -384,12 +384,4 @@
     <string name="streaming_edit_dialog_url_label">流媒体网址</string>
     <string name="streaming_edit_save">保存</string>
     <string name="streaming_edit_cancel">取消</string>
-
-    <!-- v2.7: aksi notifikasi (shuffle / tutup app) & slider headroom EQ -->
-    <string name="notif_action_shuffle">随机播放</string>
-    <string name="notif_action_close">关闭应用</string>
-    <string name="eq_headroom_safety_label">最大响度 ↔ 安全余量</string>
-    <string name="eq_headroom_safety_desc">数值越低，整体音量越大，但在提升幅度大或相互重叠的 EQ 预设上限幅器会更频繁介入。数值越高，余量越安全，但这些预设听起来会更轻。</string>
-    <!-- v2.7: dibacakan TalkBack untuk waveform seekbar -->
-    <string name="a11y_seek_position">播放位置</string>
 </resources>

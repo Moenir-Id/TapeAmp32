@@ -383,12 +383,4 @@
     <string name="streaming_edit_dialog_url_label">URL stream</string>
     <string name="streaming_edit_save">SIMPAN</string>
     <string name="streaming_edit_cancel">BATAL</string>
-
-    <!-- v2.7: aksi notifikasi (shuffle / tutup app) & slider headroom EQ -->
-    <string name="notif_action_shuffle">Acak</string>
-    <string name="notif_action_close">Tutup aplikasi</string>
-    <string name="eq_headroom_safety_label">LOUDNESS MAKS ↔ HEADROOM AMAN</string>
-    <string name="eq_headroom_safety_desc">Makin rendah = suara keseluruhan lebih kencang, tapi limiter lebih sering bekerja pada preset EQ dengan boost besar atau saling tumpang tindih. Makin tinggi = headroom lebih aman, tapi preset yang sama terdengar lebih pelan.</string>
-    <!-- v2.7: dibacakan TalkBack untuk waveform seekbar -->
-    <string name="a11y_seek_position">Posisi pemutaran</string>
 </resources>

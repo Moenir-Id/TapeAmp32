@@ -23,6 +23,9 @@ import com.projectzero.tapeamp32.data.Playlist
 import com.projectzero.tapeamp32.data.Song
 import com.projectzero.tapeamp32.ui.theme.*
 
+// Name-prompt and add-to-playlist dialogs used from the Library screen. Split
+// out of LibraryScreen.kt.
+
 @Composable
 internal fun NamePromptDialog(
     title: String,
@@ -89,6 +92,10 @@ internal fun NamePromptDialog(
         }
     )
 }
+
+/* ================================================================
+ * BARU (v1.2) -- DIALOG: PILIH PLAYLIST TUJUAN SAAT MENAMBAH LAGU
+ * ================================================================ */
 
 @Composable
 internal fun AddToPlaylistDialog(

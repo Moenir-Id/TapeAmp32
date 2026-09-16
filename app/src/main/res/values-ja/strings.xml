@@ -384,12 +384,4 @@
     <string name="streaming_edit_dialog_url_label">ストリームURL</string>
     <string name="streaming_edit_save">保存</string>
     <string name="streaming_edit_cancel">キャンセル</string>
-
-    <!-- v2.7: aksi notifikasi (shuffle / tutup app) & slider headroom EQ -->
-    <string name="notif_action_shuffle">シャッフル</string>
-    <string name="notif_action_close">アプリを終了</string>
-    <string name="eq_headroom_safety_label">最大音量 ↔ 安全なヘッドルーム</string>
-    <string name="eq_headroom_safety_desc">低くするほど全体の音量は大きくなりますが、ブーストが大きいまたは重なっているEQプリセットではリミターが频繁に作動します。高くするほどヘッドルームは安全になりますが、同じプリセットでは音量が小さくなります。</string>
-    <!-- v2.7: dibacakan TalkBack untuk waveform seekbar -->
-    <string name="a11y_seek_position">再生位置</string>
 </resources>

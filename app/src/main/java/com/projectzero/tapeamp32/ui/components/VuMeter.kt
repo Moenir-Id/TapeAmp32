@@ -26,6 +26,10 @@ import com.projectzero.tapeamp32.R
 import com.projectzero.tapeamp32.ui.theme.*
 import kotlin.math.log10
 
+/* ============================================================
+ * LINEAR -> dB
+ * ============================================================ */
+
 private fun linearToDb(value: Float): Float {
 
     if (value <= 0.0001f) {
@@ -38,6 +42,10 @@ private fun linearToDb(value: Float): Float {
         .toFloat()
         .coerceIn(-40f, 3f)
 }
+
+/* ============================================================
+ * VU METER
+ * ============================================================ */
 
 @Composable
 fun VuMeter(
@@ -96,6 +104,12 @@ fun VuMeter(
                 Alignment.CenterHorizontally
         ) {
 
+            /*
+             * ====================================================
+             * CHANNEL HEADER
+             * ====================================================
+             */
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement =
@@ -119,6 +133,12 @@ fun VuMeter(
                 modifier = Modifier.height(5.dp)
             )
 
+            /*
+             * ====================================================
+             * MAIN VU SECTION
+             * ====================================================
+             */
+
             Row(
                 modifier = Modifier
                     .weight(1f)
@@ -127,12 +147,20 @@ fun VuMeter(
                     Alignment.CenterVertically
             ) {
 
+                /*
+                 * LEFT BAR
+                 */
+
                 VuBar(
                     db = leftDb,
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight()
                 )
+
+                /*
+                 * dB SCALE
+                 */
 
                 VuDbScale(
                     modifier = Modifier
@@ -144,6 +172,10 @@ fun VuMeter(
                                 25.dp
                         )
                 )
+
+                /*
+                 * RIGHT BAR
+                 */
 
                 VuBar(
                     db = rightDb,
@@ -174,6 +206,10 @@ fun VuMeter(
         }
     }
 }
+
+/* ============================================================
+ * LEFT / RIGHT HEADER
+ * ============================================================ */
 
 @Composable
 private fun VuChannelLabel(
@@ -213,6 +249,10 @@ private fun VuChannelLabel(
         )
     }
 }
+
+/* ============================================================
+ * dB SCALE
+ * ============================================================ */
 
 @Composable
 private fun VuDbScale(
@@ -255,11 +295,20 @@ private fun VuDbScale(
     }
 }
 
+/* ============================================================
+ * LED BAR
+ * ============================================================ */
+
 @Composable
 private fun VuBar(
     db: Float,
     modifier: Modifier = Modifier
 ) {
+
+    /*
+     * -40 dB = kosong
+     * +3 dB  = penuh
+     */
 
     val fraction =
         ((db + 40f) / 43f)
@@ -291,6 +340,12 @@ private fun VuBar(
 
             val width = size.width
             val height = size.height
+
+            /*
+             * Jumlah segment dibuat lebih banyak
+             * agar tampilan seperti LED VU meter
+             * pada perangkat audio retro.
+             */
 
             val segmentCount = 24
 
@@ -328,9 +383,21 @@ private fun VuBar(
                     fromBottom <
                         activeSegments
 
+                /*
+                 * Posisi relatif dari bawah.
+                 */
+
                 val position =
                     fromBottom.toFloat() /
                         segmentCount.toFloat()
+
+                /*
+                 * WARNA LED
+                 *
+                 * Bawah  -> kuning
+                 * Tengah -> amber/orange
+                 * Atas   -> merah
+                 */
 
                 val ledColor =
                     when {
@@ -344,6 +411,10 @@ private fun VuBar(
                         else ->
                             VuYellow
                     }
+
+                /*
+                 * LED MATI
+                 */
 
                 val offColor =
                     when {
@@ -363,7 +434,15 @@ private fun VuBar(
                             )
                     }
 
+                /*
+                 * LED ACTIVE
+                 */
+
                 if (active) {
+
+                    /*
+                     * Glow lembut
+                     */
 
                     drawRect(
                         color = ledColor.copy(
@@ -382,6 +461,10 @@ private fun VuBar(
                                     2.dp.toPx()
                             )
                     )
+
+                    /*
+                     * LED utama
+                     */
 
                     drawRoundRect(
                         color = ledColor,
@@ -402,6 +485,10 @@ private fun VuBar(
                                 )
                     )
 
+                    /*
+                     * Highlight kecil di bagian atas
+                     */
+
                     drawRect(
                         color = Color.White.copy(
                             alpha = 0.12f
@@ -420,6 +507,10 @@ private fun VuBar(
                     )
 
                 } else {
+
+                    /*
+                     * LED OFF
+                     */
 
                     drawRoundRect(
                         color = offColor,

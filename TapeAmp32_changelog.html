@@ -192,40 +192,11 @@
   </header>
 
 
-  <!-- ======================= v2.7 ======================= -->
-  <div class="version-block">
-    <div class="version-head">
-      <span class="v">v2.7</span>
-      <span class="badge">TERBARU</span>
-    </div>
-    <div class="version-body">
-      <p class="tagline">Tombol Shuffle &amp; Tutup App di notifikasi kini punya terjemahan, plus kesiapan rilis: target Android 16, R8, aturan backup, dan unit test pertama.</p>
-
-      <h3 class="section-label">Perbaikan</h3>
-      <ul class="change-list">
-        <li class="fix"><b>Empat teks yang tidak pernah diterjemahkan</b> &mdash; tombol <code>SHUFFLE</code> dan <code>TUTUP APP</code> di notifikasi, serta label dan penjelasan slider <i>MAX LOUDNESS / SAFE HEADROOM</i> di tab BATAS, hanya ada di berkas bahasa Inggris. Sembilan berkas terjemahan tidak pernah menerimanya &mdash; termasuk bahasa Indonesia sendiri &mdash; sehingga semua pengguna non-Inggris melihat teks Inggris di empat tempat itu. Sekarang lengkap di 10 bahasa.</li>
-        <li class="fix"><b>Waveform seekbar tidak terlihat oleh TalkBack</b> &mdash; komponennya hanya <code>Canvas</code> dengan penanganan sentuh mentah, tanpa informasi semantik apa pun, jadi pengguna pembaca layar tidak bisa memfokuskannya, tidak pernah mendengar posisi lagu, dan tidak bisa melakukan seek sama sekali. Sekarang dikenali sebagai slider, posisinya dibacakan dalam persen, dan bisa digeser lewat aksi pembaca layar.</li>
-      </ul>
-
-      <h3 class="section-label">Baru</h3>
-      <ul class="change-list">
-        <li class="new"><b>Unit test JVM pertama</b> &mdash; berjalan tanpa HP maupun emulator, menutup tiga titik yang paling sering jadi sumber bug diam-diam: kelengkapan string di seluruh bahasa, parser lirik <code>.lrc</code>, dan antrian shuffle. Test bahasa akan <i>gagal</i> begitu ada teks baru yang lupa diterjemahkan, jadi bug yang sudah berulang di v1.5, v2.2/v2.3, dan v2.6 tidak bisa lolos diam-diam lagi. Jalankan dengan <code>gradlew testDebugUnitTest</code>.</li>
-        <li class="new"><b>Build release yang lebih ramping &amp; bisa ditandatangani otomatis</b> &mdash; R8 (minify + shrink resource) diaktifkan, dengan aturan yang menjaga extractor Media3 yang dimuat dinamis (FLAC, HLS) dan nama field di berkas backup/preset EQ supaya tidak ikut dipangkas. Penandatanganan APK dibaca dari <code>keystore.properties</code> lokal yang tidak ikut ke repo.</li>
-        <li class="new"><b>Aturan cloud backup yang eksplisit</b> &mdash; yang ikut pindah ke HP baru hanya preferensi (preset EQ, tema, bahasa, stasiun favorit); cache waveform tidak ikut karena hanya berlaku untuk HP lama.</li>
-      </ul>
-
-      <h3 class="section-label">Teknis</h3>
-      <ul class="change-list">
-        <li><b>Target Android dinaikkan 14 (API 34) &rarr; 16 (API 36)</b>. Sejak 31 Agustus 2026 Google Play menolak app yang masih target di bawah itu. <b>Android minimum tidak berubah</b>: app tetap berjalan mulai Android 8.0 (API 26). Perlu diuji ulang di Android 16: tampilan edge-to-edge (status bar &amp; navigation bar transparan), dan perilaku kunci orientasi landscape yang tidak lagi dihormati di layar lebar (tablet/foldable).</li>
-      </ul>
-    </div>
-  </div>
-
-
   <!-- ======================= v2.6 ======================= -->
   <div class="version-block">
     <div class="version-head">
       <span class="v">v2.6</span>
+      <span class="badge">TERBARU</span>
     </div>
     <div class="version-body">
       <p class="tagline">Fix tap/geser baris lirik yang tidak memindahkan posisi playback lagu.</p>

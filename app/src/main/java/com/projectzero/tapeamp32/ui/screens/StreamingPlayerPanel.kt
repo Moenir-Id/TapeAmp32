@@ -30,6 +30,9 @@ import com.projectzero.tapeamp32.ui.theme.*
 import kotlin.math.abs
 import kotlin.math.sin
 
+// Now-playing player panel, waveform visualizer, and small info-row composable
+// for the Streaming screen. Split out of StreamingScreen.kt.
+
 @Composable
 internal fun StreamingPlayerPanel(
     station: RadioStation?,
@@ -70,6 +73,12 @@ internal fun StreamingPlayerPanel(
             Arrangement.SpaceBetween
     ) {
 
+        /*
+         * ============================================================
+         * HEADER
+         * ============================================================
+         */
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement =
@@ -105,6 +114,10 @@ internal fun StreamingPlayerPanel(
                     letterSpacing = 0.5.sp
                 )
             }
+
+            /*
+             * LIVE BADGE
+             */
 
             if (isPlaying) {
 
@@ -144,6 +157,12 @@ internal fun StreamingPlayerPanel(
             modifier = Modifier.height(6.dp)
         )
 
+        /*
+         * ============================================================
+         * WAVEFORM
+         * ============================================================
+         */
+
         AudioWaveformVisualizer(
             isPlaying = isPlaying,
             modifier = Modifier
@@ -165,6 +184,12 @@ internal fun StreamingPlayerPanel(
         Spacer(
             modifier = Modifier.height(6.dp)
         )
+
+        /*
+         * ============================================================
+         * BUFFER
+         * ============================================================
+         */
 
         Column(
             modifier = Modifier.fillMaxWidth()
@@ -222,6 +247,12 @@ internal fun StreamingPlayerPanel(
             modifier = Modifier.height(6.dp)
         )
 
+        /*
+         * ============================================================
+         * STREAM INFORMATION
+         * ============================================================
+         */
+
         Column(
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -239,7 +270,11 @@ internal fun StreamingPlayerPanel(
                     if (isStreamPlaying && liveStreamBitrateKbps > 0)
                         "$liveStreamBitrateKbps kbps"
                     else
-
+                        // Belum ada stream aktif, ATAU server yang sedang diputar
+                        // tidak kirim info bitrate sama sekali (tidak ada header
+                        // icy-br maupun bitrate di container) -- daripada tampil
+                        // "0 kbps" yang menyesatkan (seolah stream rusak),
+                        // tampilkan "--" yang jujur.
                         "--"
             )
 
@@ -260,11 +295,20 @@ internal fun StreamingPlayerPanel(
     }
 }
 
+/* ================================================================
+ * WAVEFORM
+ * ================================================================ */
+
 @Composable
 internal fun AudioWaveformVisualizer(
     isPlaying: Boolean,
     modifier: Modifier = Modifier
 ) {
+
+    /*
+     * Animasi kontinu, tetapi bentuk waveform tidak
+     * di-random ulang setiap draw.
+     */
 
     val transition =
         rememberInfiniteTransition(
@@ -297,6 +341,10 @@ internal fun AudioWaveformVisualizer(
         val centerY =
             height / 2f
 
+        /*
+         * GRID HORIZONTAL
+         */
+
         val gridColor =
             Color(0xFF253032)
 
@@ -324,6 +372,10 @@ internal fun AudioWaveformVisualizer(
                 strokeWidth = 1.dp.toPx()
             )
         }
+
+        /*
+         * GRID VERTICAL
+         */
 
         val verticalCount = 24
 
@@ -353,6 +405,10 @@ internal fun AudioWaveformVisualizer(
             )
         }
 
+        /*
+         * WAVEFORM
+         */
+
         val sampleCount = 90
 
         val step =
@@ -367,6 +423,12 @@ internal fun AudioWaveformVisualizer(
             val normalized =
                 i /
                     sampleCount.toFloat()
+
+            /*
+             * Kombinasi beberapa gelombang
+             * membuat waveform terlihat natural
+             * tanpa random flicker.
+             */
 
             val wave1 =
                 sin(
@@ -437,6 +499,10 @@ internal fun AudioWaveformVisualizer(
         }
     }
 }
+
+/* ================================================================
+ * INFORMATION ROW
+ * ================================================================ */
 
 @Composable
 internal fun InfoRow(

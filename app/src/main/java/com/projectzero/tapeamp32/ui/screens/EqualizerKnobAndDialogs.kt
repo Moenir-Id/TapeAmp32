@@ -40,6 +40,9 @@ import com.projectzero.tapeamp32.ui.theme.StrokeGold
 import com.projectzero.tapeamp32.ui.theme.TextLight
 import com.projectzero.tapeamp32.ui.theme.TextMuted
 
+// The rotary EqKnob control plus the save/delete preset dialogs used by the
+// Equalizer screen. Split out of EqualizerScreen.kt.
+
 @Composable
 internal fun EqKnob(
     label: String,
@@ -50,7 +53,11 @@ internal fun EqKnob(
     onValueChange: (Double) -> Unit,
     modifier: Modifier = Modifier,
     centerValue: Double? = null,
-
+    // PATCH (v1.6, "proporsional ke layar"): dulu selalu 84.dp keras (lihat
+    // catatan lama di atas -- 64->76->84dp). Sekarang jadi parameter dengan
+    // default 84dp yang sama persis (tidak mengubah tampilan lama kalau
+    // dipanggil tanpa argumen ini), tapi EqualizerScreen mengirim ukuran
+    // yang sudah diskalakan ke lebar layar (lihat eqKnobSize).
     knobSize: androidx.compose.ui.unit.Dp = 84.dp
 ) {
     val minAngleDeg = -135.0
@@ -73,18 +80,29 @@ internal fun EqKnob(
 
         Spacer(modifier = Modifier.height(5.dp))
 
+        // PATCH (Skin Klasik / Slider-Knob-Toggle): knop diperbesar lagi
+        // (64dp -> 76dp) -- versi 64dp masih terasa kecil dibanding rocker
+        // switch & fader baru di layar yang sama, jadi disamakan skalanya
+        // supaya seluruh panel EQ terasa satu keluarga "hardware klasik".
+        // PATCH (v1.5): diperbesar SEDIKIT lagi (76dp -> 84dp) khusus untuk
+        // knop-knop di tab lanjutan VOCAL & STEREO (Vocal Bass/Treble,
+        // Balance, Stereo Expansion) -- dikeluhkan masih terasa kecil untuk
+        // diputar dengan jari dibanding kontrol lain di sekitarnya.
         Box(
             modifier = Modifier
                 .size(knobSize)
                 .pointerInput(minValue, maxValue) {
-
+                    // Konversi posisi sentuh (relatif ke pusat knop) jadi sudut,
+                    // lalu langsung ke nilai -- BUKAN akumulasi jarak drag.
                     val cx = size.width / 2f
                     val cy = size.height / 2f
 
                     fun updateFromPosition(pos: Offset) {
                         val dx = (pos.x - cx).toDouble()
                         val dy = (pos.y - cy).toDouble()
-
+                        // atan2(dx, -dy): 0 derajat = arah jam 12 (atas), positif
+                        // searah jarum jam -- sama persis dengan konvensi yang
+                        // dipakai untuk menggambar jarum penunjuk di bawah.
                         val rawAngle = Math.toDegrees(kotlin.math.atan2(dx, -dy))
                         val clampedAngle = rawAngle.coerceIn(minAngleDeg, maxAngleDeg)
                         val newFraction = (clampedAngle - minAngleDeg) / (maxAngleDeg - minAngleDeg)
@@ -105,12 +123,21 @@ internal fun EqKnob(
                 val center = Offset(size.width / 2f, size.height / 2f)
                 val outerRadius = size.minDimension / 2f
 
+                // ------------------------------------------------------
+                // Bayangan halus di bawah knop supaya terlihat "timbul"
+                // dari panel, bukan gambar datar.
+                // ------------------------------------------------------
                 drawCircle(
                     color = Color.Black.copy(alpha = 0.4f),
                     radius = outerRadius - 1.dp.toPx(),
                     center = center + Offset(0f, 1.5.dp.toPx())
                 )
 
+                // ------------------------------------------------------
+                // Skala tick melingkar (mirip pelat potensiometer klasik) --
+                // digambar SEBELUM badan knop supaya badan menutupi pangkal
+                // tick dan hanya ujungnya yang terlihat mencuat di tepi.
+                // ------------------------------------------------------
                 val tickCount = 11
                 for (i in 0 until tickCount) {
                     val t = i / (tickCount - 1).toDouble()
@@ -138,6 +165,11 @@ internal fun EqKnob(
                     )
                 }
 
+                // ------------------------------------------------------
+                // Badan knop -- gradasi radial mensimulasikan logam disorot
+                // dari kiri-atas (highlight terang) ke kanan-bawah (gelap),
+                // gaya knop amplifier/tape deck jadul.
+                // ------------------------------------------------------
                 val bodyRadius = outerRadius - 7.dp.toPx()
                 drawCircle(
                     brush = Brush.radialGradient(
@@ -152,7 +184,7 @@ internal fun EqKnob(
                     radius = bodyRadius,
                     center = center
                 )
-
+                // Cincin gold tipis di tepi badan knop
                 drawCircle(
                     color = StrokeGold,
                     radius = bodyRadius,
@@ -160,6 +192,11 @@ internal fun EqKnob(
                     style = Stroke(width = 1.dp.toPx())
                 )
 
+                // ------------------------------------------------------
+                // Jarum penunjuk -- tebal, ujung bulat, dari dekat pusat
+                // sampai mendekati tepi badan knop (bukan dari titik pusat
+                // persis, meniru jarum knop fisik yang "menempel" di badan).
+                // ------------------------------------------------------
                 val rad = Math.toRadians(angleDeg).toFloat()
                 val pointerStartR = bodyRadius * 0.22f
                 val pointerEndR = bodyRadius * 0.88f
@@ -179,6 +216,8 @@ internal fun EqKnob(
                     cap = StrokeCap.Round
                 )
 
+                // Tudung tengah (cap) -- lingkaran kecil menutupi pangkal jarum,
+                // memberi kesan knop punya "poros" seperti barang fisik.
                 drawCircle(
                     color = Color(0xFF201F1C),
                     radius = bodyRadius * 0.3f,
@@ -199,12 +238,19 @@ internal fun EqKnob(
             text = label,
             color = TextMuted,
             fontFamily = MonoFont,
-
+            // PATCH (v1.6, "seragamkan font"): disamakan dengan label kecil
+            // sejenis di bawah kontrol lain (label frekuensi slider, teks
+            // ON/OFF rocker, skala dB -- semuanya 6sp), sebelumnya 6.5sp
+            // sendirian di label knop ini.
             fontSize = 6.sp,
             letterSpacing = 0.2.sp
         )
     }
 }
+
+// ================================================================
+// SAVE DIALOG - SEPARATE COMPOSABLE
+// ================================================================
 
 @Composable
 internal fun SavePresetDialog(
@@ -216,7 +262,8 @@ internal fun SavePresetDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         containerColor = PanelBlack,
-
+        // PATCH (klasik): dialog dibungkus border emas + sudut kotak-membulat
+        // supaya seragam dengan panel EQ/knob lain, bukan dialog Material polos.
         shape = RoundedCornerShape(7.dp),
         modifier = Modifier.border(
             width = 1.dp,
@@ -283,6 +330,14 @@ internal fun SavePresetDialog(
     )
 }
 
+// ================================================================
+// DELETE PRESET DIALOG -- BARU (fitur "hapus preset")
+// Konfirmasi sebelum menghapus preset custom (hasil SAVE/UPLOAD) secara
+// permanen dari daftar & DataStore. Preset bawaan tidak pernah sampai ke
+// dialog ini -- lihat customPresetNames di EqualizerScreen & EqualizerHeader,
+// yang menyaring supaya ikon hapus cuma muncul di preset custom.
+// ================================================================
+
 @Composable
 internal fun DeletePresetDialog(
     presetName: String,
@@ -335,3 +390,7 @@ internal fun DeletePresetDialog(
         }
     )
 }
+
+// ================================================================
+// HEADER
+// ================================================================

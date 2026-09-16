@@ -384,12 +384,4 @@
     <string name="streaming_edit_dialog_url_label">스트림 URL</string>
     <string name="streaming_edit_save">저장</string>
     <string name="streaming_edit_cancel">취소</string>
-
-    <!-- v2.7: aksi notifikasi (shuffle / tutup app) & slider headroom EQ -->
-    <string name="notif_action_shuffle">셔플</string>
-    <string name="notif_action_close">앱 종료</string>
-    <string name="eq_headroom_safety_label">최대 음량 ↔ 안전 헤드룸</string>
-    <string name="eq_headroom_safety_desc">낮출수록 전체 음량은 커지지만, 부스트가 크거나 겹치는 EQ 프리셋에서는 리미터가 더 자주 작동합니다. 높일수록 헤드룸은 안전해지지만 같은 프리셋의 음량은 작아집니다.</string>
-    <!-- v2.7: dibacakan TalkBack untuk waveform seekbar -->
-    <string name="a11y_seek_position">재생 위치</string>
 </resources>

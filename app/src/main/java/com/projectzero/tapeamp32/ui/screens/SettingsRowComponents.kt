@@ -21,6 +21,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.projectzero.tapeamp32.ui.theme.*
 
+// Sidebar item, section title, card, toggle and system-menu row composables
+// used throughout the Settings screen. Split out of SettingsScreen.kt.
+
 @Composable
 internal fun SettingsSidebarItem(
     category: SettingsCategory,
@@ -68,7 +71,7 @@ internal fun SettingsSidebarItem(
             } else {
                 TextMuted
             },
-            modifier = Modifier.size(19.dp)
+            modifier = Modifier.size(19.dp) // PATCH: 16dp -> 19dp, icon kategori settings
         )
 
         Spacer(
@@ -94,6 +97,12 @@ internal fun SettingsSidebarItem(
         )
     }
 }
+
+/* ================================================================
+ * SYSTEM SUB-MENU ROW -- BARU: daftar sub-menu di dalam kategori SYSTEM
+ * (mirip Settings > System bawaan Android): ikon + judul + deskripsi
+ * singkat + chevron, tap untuk masuk ke sub-halamannya.
+ * ================================================================ */
 
 @Composable
 internal fun SettingsSystemMenuRow(
@@ -149,6 +158,11 @@ internal fun SettingsSystemMenuRow(
     }
 }
 
+/* ================================================================
+ * LANGUAGE ROW -- BARU: baris pilihan bahasa gaya radio button, dipakai
+ * di System > Language.
+ * ================================================================ */
+
 @Composable
 internal fun SettingsLanguageRow(
     label: String,
@@ -190,6 +204,10 @@ internal fun SettingsLanguageRow(
     }
 }
 
+/* ================================================================
+ * SECTION TITLE
+ * ================================================================ */
+
 @Composable
 internal fun SettingsSectionTitle(
     text: String
@@ -208,6 +226,10 @@ internal fun SettingsSectionTitle(
     )
 }
 
+/* ================================================================
+ * SETTINGS CARD
+ * ================================================================ */
+
 @Composable
 internal fun SettingsRowCard(
     content: @Composable () -> Unit
@@ -225,7 +247,10 @@ internal fun SettingsRowCard(
             .background(
                 PanelBlackAlt
             )
-
+            // PATCH (klasik): SettingsRowCard dipakai di HAMPIR SEMUA baris
+            // pengaturan -- border sebelumnya abu-abu flat (#292D2D), sekarang
+            // StrokeGold (redup) supaya seluruh layar Settings konsisten dengan
+            // panel EQ/knob yang sudah lebih dulu bergaya klasik.
             .border(
                 width = 0.7.dp,
                 color = StrokeGold.copy(alpha = 0.7f),
@@ -239,6 +264,10 @@ internal fun SettingsRowCard(
         content()
     }
 }
+
+/* ================================================================
+ * TOGGLE ROW
+ * ================================================================ */
 
 @Composable
 internal fun SettingsToggleRow(
@@ -274,6 +303,17 @@ internal fun SettingsToggleRow(
         }
     }
 }
+
+/* ================================================================
+ * RETRO TOGGLE -- PATCH (Skin Klasik NavRail/Toggle/Icon)
+ *
+ * Versi lama pil hijau 29x16dp (warna hijau modern, tidak nyambung
+ * dengan tema gold/kaset) diganti rocker switch metalik gaya panel
+ * hardware klasik -- sama bahasa desainnya dengan EqRockerSwitch di
+ * layar Equalizer, supaya toggle di Settings, Equalizer, dan menu
+ * lain semuanya senada. Ukuran dibesarkan 29x16dp -> 46x24dp, knob
+ * bulat metalik 18dp (dulu cuma titik putih 11dp).
+ * ================================================================ */
 
 @Composable
 internal fun RetroToggle(
@@ -332,3 +372,7 @@ internal fun RetroToggle(
         )
     }
 }
+
+/* ================================================================
+ * SLIDER ROW
+ * ================================================================ */

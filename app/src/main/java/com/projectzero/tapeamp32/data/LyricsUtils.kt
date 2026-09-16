@@ -10,10 +10,30 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import java.util.concurrent.Executor
 import kotlin.coroutines.resume
 
+/* ================================================================
+ * LYRICS UTILS -- PATCH: lirik dari metadata embedded + sinkron
+ * ================================================================
+ *
+ * Sebelumnya lirik cuma dibaca dari file sidecar (.lrc/.txt) di folder
+ * yang sama dengan lagu. Banyak file FLAC (dan OGG) sudah menyimpan
+ * lirik langsung di metadatanya sendiri lewat Vorbis Comment dengan key
+ * "LYRICS" / "UNSYNCEDLYRICS" / "SYNCEDLYRICS" -- tag umum yang dipakai
+ * banyak tagger musik (mp3tag, Picard, dll). File ini menambahkan:
+ *
+ * 1. extractEmbeddedLyrics(): baca tag lirik itu langsung dari file
+ *    lewat Media3 (jalan juga untuk lagu content:// dari SAF, bukan
+ *    cuma path filesystem biasa).
+ * 2. parseLrc(): ubah teks lirik (dari sidecar ATAU dari metadata) jadi
+ *    daftar baris + timestamp kalau formatnya LRC standar
+ *    ("[mm:ss.xx] teks"), supaya bisa disinkron ke posisi playback.
+ */
+
+/** Satu baris lirik dengan waktu mulainya (dalam ms sejak awal lagu). */
 data class LyricLine(val timeMs: Long, val text: String)
 
 private val LRC_TIMESTAMP_REGEX = Regex("""\[(\d{1,3}):(\d{2})(?:[.:](\d{1,3}))?]""")
 
+/** Vorbis Comment key yang umum dipakai tagger buat nyimpen lirik di FLAC/OGG. */
 private val LYRICS_TAG_KEYS = setOf(
     "LYRICS",
     "UNSYNCEDLYRICS",
@@ -22,6 +42,12 @@ private val LYRICS_TAG_KEYS = setOf(
     "SYNCED LYRICS"
 )
 
+/**
+ * Parse teks jadi daftar baris lirik + timestamp, kalau memang ada
+ * timestamp gaya LRC di dalamnya (mis. "[00:12.34]"). Kalau teksnya
+ * lirik polos tanpa timestamp sama sekali, return null -- caller
+ * tinggal tampilkan sebagai teks biasa (tidak bisa disinkron).
+ */
 fun parseLrc(raw: String): List<LyricLine>? {
     val lines = mutableListOf<LyricLine>()
     var hasTimestamp = false
@@ -50,6 +76,12 @@ fun parseLrc(raw: String): List<LyricLine>? {
     return lines.sortedBy { it.timeMs }
 }
 
+/**
+ * Baca lirik yang tersimpan langsung di metadata file audio (Vorbis
+ * Comment di FLAC/OGG). Return null kalau tag lirik tidak ada, filenya
+ * tidak bisa dibuka, atau formatnya tidak menyimpan Vorbis Comment
+ * (mis. MP3 murni -- di luar cakupan patch kecil ini).
+ */
 @UnstableApi
 suspend fun extractEmbeddedLyrics(context: Context, uri: Uri): String? {
     return try {

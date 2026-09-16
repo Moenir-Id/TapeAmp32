@@ -26,6 +26,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.projectzero.tapeamp32.ui.theme.*
 
+// Slider row + custom horizontal slider + dropdown row composables, plus their
+// small numeric/label formatting helpers. Split out of SettingsScreen.kt.
+
 @Composable
 internal fun SettingsSliderRow(
     label: String,
@@ -33,7 +36,9 @@ internal fun SettingsSliderRow(
     range: ClosedFloatingPointRange<Float>,
     suffix: String,
     onChange: (Float) -> Unit,
-
+    // BARU: label lokal untuk nilai "Off" (dipakai suffix " min", mis. Sleep
+    // Timer) -- default "Off" dipertahankan untuk pemanggil lama yang belum
+    // butuh terjemahan.
     offLabel: String = "Off"
 ) {
 
@@ -90,6 +95,19 @@ internal fun SettingsSliderRow(
     }
 }
 
+/* ================================================================
+ * CLASSIC HORIZONTAL SLIDER -- BARU (patch "Skin Klasik NavRail/
+ * Toggle/Icon")
+ *
+ * Pengganti Material3 Slider bawaan (thumb bulat flat modern) yang
+ * dipakai di semua baris pengaturan bernilai kontinu (mis. preamp,
+ * durasi crossfade, dll). Sekarang berupa fader horizontal bergaya
+ * hardware klasik: rel logam cekung dengan skala tick di atas/bawah
+ * + tuas (cap) metalik lebar dengan garis pegangan di tengah -- bahasa
+ * visual yang sama dengan VerticalVolumeSlider (Player) dan EqSlider
+ * (Equalizer) supaya semua slider di app terasa satu keluarga.
+ * ================================================================ */
+
 @Composable
 internal fun ClassicHorizontalSlider(
     value: Float,
@@ -132,6 +150,7 @@ internal fun ClassicHorizontalSlider(
     ) {
         val trackWidthPx = with(LocalDensity.current) { maxWidth.toPx() }
 
+        // Skala tick statis, atas & bawah
         Canvas(modifier = Modifier.fillMaxSize()) {
             val tickCount = 12
             val majorLength = 3.dp.toPx()
@@ -146,6 +165,7 @@ internal fun ClassicHorizontalSlider(
             }
         }
 
+        // Slot/alur tengah
         Box(
             modifier = Modifier
                 .align(Alignment.Center)
@@ -156,7 +176,7 @@ internal fun ClassicHorizontalSlider(
                 .background(Color(0xFF050505))
                 .border(0.5.dp, Color(0xFF2A2A2A), RoundedCornerShape(2.dp))
         ) {
-
+            // Isian level dari kiri sampai posisi value
             Box(
                 modifier = Modifier
                     .align(Alignment.CenterStart)
@@ -170,6 +190,7 @@ internal fun ClassicHorizontalSlider(
             )
         }
 
+        // Tuas (cap) metalik -- meniru fader mixer/EQ fisik klasik
         Box(
             modifier = Modifier
                 .align(Alignment.CenterStart)
@@ -207,6 +228,12 @@ internal fun ClassicHorizontalSlider(
 
 internal fun Float.roundToIntSafe(): Int = kotlin.math.round(this).toInt()
 
+/* ================================================================
+ * VALUE FORMATTER
+ * ================================================================ */
+
+// BARU (v2.1): format mm:ss untuk sisa waktu Sleep Timer (mode MINUTES) -- dipakai di
+// Settings > System dan di VfdStatusPanel (lihat PlayerScreen).
 internal fun formatSleepCountdown(remainingMs: Long): String {
     val totalSec = (remainingMs / 1000L).coerceAtLeast(0L)
     val minutes = totalSec / 60
@@ -237,6 +264,9 @@ internal fun formatSettingValue(
             }
         }
 
+        // BARU (v2.1): dipakai slider Sleep Timer -- 0 tampil sebagai offLabel
+        // ("Off"/"Mati", terlokalisasi), bukan "0 min" (0 menit tidak masuk akal
+        // sebagai durasi timer, jadi diberi label yang lebih jelas).
         " min" -> {
             if (value <= 0f) offLabel else "${value.toInt()} min"
         }
@@ -249,6 +279,10 @@ internal fun formatSettingValue(
         }
     }
 }
+
+/* ================================================================
+ * DROPDOWN ROW
+ * ================================================================ */
 
 @Composable
 internal fun SettingsDropdownRow(
@@ -317,7 +351,7 @@ internal fun SettingsDropdownRow(
                             Icons.Filled.ChevronRight,
                         contentDescription = null,
                         tint = TextMuted,
-                        modifier = Modifier.size(16.dp)
+                        modifier = Modifier.size(16.dp) // PATCH: 13dp -> 16dp, chevron dropdown
                     )
                 }
 
@@ -326,7 +360,9 @@ internal fun SettingsDropdownRow(
                     onDismissRequest = {
                         expanded = false
                     },
-
+                    // PATCH (klasik): ganti panel abu-abu polos (#171A1A) dengan
+                    // PanelBlack + border emas + sudut membulat, seragam dengan
+                    // dropdown preset di layar Equalizer & panel lain di app ini.
                     modifier = Modifier
                         .clip(RoundedCornerShape(6.dp))
                         .background(PanelBlack)
@@ -362,3 +398,7 @@ internal fun SettingsDropdownRow(
         }
     }
 }
+
+/* ================================================================
+ * INFO ROW
+ * ================================================================ */

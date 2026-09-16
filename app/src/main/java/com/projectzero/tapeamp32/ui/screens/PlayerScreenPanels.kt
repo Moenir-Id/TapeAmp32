@@ -22,6 +22,10 @@ import com.projectzero.tapeamp32.ui.components.VerticalVolumeSlider
 import com.projectzero.tapeamp32.ui.components.WaveformSeekBar
 import com.projectzero.tapeamp32.ui.theme.*
 
+// Side info panel, scrolling track bar, and small status-badge composables
+// for the Player screen, plus the formatMs() time-formatting helper. Split out
+// of PlayerScreen.kt.
+
 @Composable
 internal fun PlayerSidePanel(
     isCompact: Boolean = false,
@@ -35,7 +39,9 @@ internal fun PlayerSidePanel(
 
     Column(
         modifier = Modifier
-
+            // BARU (v1.5): sedikit lebih ramping saat Split Screen/Multi-Window
+            // (isCompact) supaya kaset & VU Meter di sebelahnya tetap kebagian
+            // ruang yang layak.
             .width(if (isCompact) 54.dp else 72.dp)
             .fillMaxHeight()
             .clip(
@@ -59,6 +65,10 @@ internal fun PlayerSidePanel(
             Arrangement.SpaceBetween
     ) {
 
+        /* ========================================================
+         * POWER + SCREEN + VOLUME AREA
+         * ======================================================== */
+
         Column(
             horizontalAlignment =
                 Alignment.CenterHorizontally
@@ -68,6 +78,11 @@ internal fun PlayerSidePanel(
                 on = powerOn,
                 onToggle = onPowerToggle
             )
+
+            /*
+             * FIX: jarak antara POWER, SCREEN, dan VOLUME dibuat lebih
+             * estetik/lega (tidak mepet 0dp lagi, tapi tetap ringkas)
+             */
 
             Spacer(
                 modifier = Modifier.height(10.dp)
@@ -88,6 +103,10 @@ internal fun PlayerSidePanel(
                 trackHeight = 120.dp
             )
         }
+
+        /* ========================================================
+         * DECORATIVE VENT
+         * ======================================================== */
 
         Column(
             modifier = Modifier
@@ -118,6 +137,10 @@ internal fun PlayerSidePanel(
             }
         }
 
+        /* ========================================================
+         * BRAND
+         * ======================================================== */
+
         Column(
             horizontalAlignment =
                 Alignment.CenterHorizontally
@@ -146,6 +169,10 @@ internal fun PlayerSidePanel(
         }
     }
 }
+
+/* ================================================================
+ * TRACK BAR
+ * ================================================================ */
 
 @Composable
 internal fun PlayerTrackBar(
@@ -177,6 +204,10 @@ internal fun PlayerTrackBar(
             )
     ) {
 
+        /* ========================================================
+         * TIME + SLIDER
+         * ======================================================== */
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment =
@@ -190,6 +221,10 @@ internal fun PlayerTrackBar(
                 fontSize = 9.sp
             )
 
+            // BARU (v2.4): WAVEFORM SEEKBAR -- gambar amplitude asli lagu (lihat
+            // WaveformExtractor) & bisa di-tap/drag langsung di atas bar-nya untuk
+            // seek, gaya visual scrubbing presisi. Menggantikan Slider Material
+            // polos yang cuma garis+thumb tanpa representasi audio sama sekali.
             WaveformSeekBar(
                 waveform = waveform,
                 progressFraction = progressFraction,
@@ -216,6 +251,10 @@ internal fun PlayerTrackBar(
             modifier = Modifier.height(2.dp)
         )
 
+        /* ========================================================
+         * FORMAT + HI-RES
+         * ======================================================== */
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement =
@@ -238,6 +277,10 @@ internal fun PlayerTrackBar(
         }
     }
 }
+
+/* ================================================================
+ * BADGE
+ * ================================================================ */
 
 @Composable
 internal fun PlayerBadge(
@@ -268,6 +311,10 @@ internal fun PlayerBadge(
             )
     )
 }
+
+/* ================================================================
+ * TIME FORMAT
+ * ================================================================ */
 
 fun formatMs(ms: Long): String {
 

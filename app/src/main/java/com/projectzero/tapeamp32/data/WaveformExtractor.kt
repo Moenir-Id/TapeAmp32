@@ -12,10 +12,47 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
+/**
+ * BARU (v2.4, "Waveform Seekbar"): ekstrak amplitude riil dari file audio,
+ * dipakai [com.projectzero.tapeamp32.ui.components.WaveformSeekBar] untuk gambar
+ * bar waveform presisi -- BUKAN bar acak/dekoratif, tapi benar-benar
+ * hasil decode PCM dari lagu yang bersangkutan.
+ *
+ * Cara kerja singkat: decode seluruh track audio lewat MediaExtractor +
+ * MediaCodec (jalur decode standar Android, bukan lewat ExoPlayer supaya
+ * tidak mengganggu player yang sedang aktif), lalu bagi timeline lagu jadi
+ * [bucketCount] bucket dan simpan PEAK amplitude (nilai absolut sample
+ * tertinggi) per bucket. Hasil akhir dinormalisasi 0f..1f terhadap bucket
+ * tertinggi supaya waveform selalu "mengisi" tinggi seekbar, sama seperti
+ * gaya modern.
+ *
+ * (patch "cache instan"): WaveformCache di bawah sekarang dua lapis --
+ * memori (instan, LRU) DAN disk (persist di cacheDir, bertahan lintas buka-tutup
+ * app), jadi lagu yang sama tidak perlu di-decode ulang lagi begitu pernah
+ * dibuka sekali, termasuk setelah app di-restart total.
+ *
+ * Catatan sisa:
+ * - Untuk lagu panjang/bitrate tinggi yang BELUM pernah di-cache, decode-nya
+ *   tetap beberapa ratus ms sampai ~1-2 detik sekali saja, makanya dipanggil
+ *   dari coroutine IO dan UI menampilkan waveform datar dulu selagi loading
+ *   (lihat WaveformSeekBar).
+ * - Asumsi output decoder PCM 16-bit (ENCODING_PCM_16BIT), yang merupakan
+ *   default MediaCodec audio decoder bawaan Android -- sesuai juga dengan
+ *   asumsi pipeline DSP lain di app ini (ParametricEqAudioProcessor dkk).
+ * - Kalau format/track tidak didukung atau proses decode gagal di tengah
+ *   jalan, fungsi ini melempar exception; PEMANGGIL (WaveformExtractor.safeExtract
+ *   atau collector di PlayerViewModel) yang bertanggung jawab menangkapnya
+ *   dan fallback ke null (WaveformSeekBar otomatis balik ke garis progres
+ *   polos kalau waveform null, tidak crash).
+ */
 object WaveformExtractor {
 
     private const val TIMEOUT_US = 10_000L
 
+    /**
+     * Versi aman: tidak pernah melempar exception, mengembalikan null kalau
+     * decode gagal (format tidak didukung, file tidak terbaca, dll).
+     */
     fun safeExtract(context: Context, uri: Uri, bucketCount: Int = 180): FloatArray? {
         return try {
             extract(context, uri, bucketCount)
@@ -58,6 +95,10 @@ object WaveformExtractor {
                     format.getLong(MediaFormat.KEY_DURATION)
                 else 0L
 
+            // Estimasi total sample FRAME (per channel) sepanjang lagu, dipakai untuk
+            // memetakan posisi decode saat ini ke index bucket 0..bucketCount-1. Ini
+            // perkiraan (bisa meleset sedikit dari padding encoder), makanya index
+            // bucket di-clamp di bawah -- tidak perlu presisi sample-exact.
             val estTotalFrames =
                 max(1L, (durationUs / 1_000_000.0 * sampleRate).toLong())
 
@@ -111,6 +152,9 @@ object WaveformExtractor {
                         var frame = 0
                         while (frame < frameCount) {
 
+                            // Ambil amplitude tertinggi ANTAR channel per frame (mis.
+                            // stereo: max(|L|,|R|)) supaya waveform tetap merepresentasikan
+                            // channel yang lebih "keras" pada momen itu.
                             var peakInFrame = 0
                             var ch = 0
                             while (ch < channelCount) {
@@ -144,12 +188,18 @@ object WaveformExtractor {
 
                 } else if (outputIndex == MediaCodec.INFO_TRY_AGAIN_LATER) {
                     if (sawInputEos) {
-
+                        // Sudah tidak ada input baru & belum ada output baru -- kemungkinan
+                        // decoder sudah benar benar habis walau EOS flag belum kebaca,
+                        // hindari infinite loop.
                         break
                     }
                 }
             }
 
+            // Normalisasi akhir terhadap bucket tertinggi supaya waveform selalu
+            // "mengisi" tinggi kontainer UI (gaya modern), bukan cuma 0..1 mentah
+            // relatif terhadap Short.MAX_VALUE (lagu yang di-mastering pelan akan
+            // terlihat rata/flat kalau tidak dinormalisasi ulang di sini).
             var maxPeak = 0f
             for (v in bucketPeak) maxPeak = max(maxPeak, v)
 
@@ -175,11 +225,27 @@ object WaveformExtractor {
     }
 }
 
+/**
+ * Cache DUA LAPIS, kunci = Song.id:
+ * 1. Memori (LinkedHashMap access-order = LRU sederhana, maks [MAX_MEM_ENTRIES])
+ *    -- paling cepat, tapi cuma hidup selama proses app berjalan.
+ * 2. Disk (satu file kecil biner per lagu di cacheDir/waveform_cache/) -- bertahan
+ *    lintas buka-tutup app, jadi lagu yang sudah pernah diputar SEBELUM app
+ *    ditutup total pun tidak perlu decode ulang lagi pas dibuka lagi ("sekali
+ *    buka library cepat"). Baca file kecil ini (cuma ~180 float =
+ *    720 byte per lagu) masih JAUH lebih cepat daripada decode MediaCodec ulang.
+ *
+ * File cache HANYA di cacheDir (bukan file storage biasa) supaya otomatis boleh
+ * dibersihkan OS kalau perangkat kehabisan ruang, dan otomatis ikut hilang kalau
+ * app di-uninstall -- tidak menyampah storage pengguna.
+ */
 object WaveformCache {
 
     private const val MAX_MEM_ENTRIES = 40
     private const val CACHE_DIR_NAME = "waveform_cache"
 
+    // LinkedHashMap access-order = otomatis jadi LRU sederhana; entry paling
+    // lama tidak dipakai kebuang duluan begitu MAX_MEM_ENTRIES terlampaui.
     private val memCache = object : LinkedHashMap<Long, FloatArray>(
         MAX_MEM_ENTRIES, 0.75f, true
     ) {
@@ -194,6 +260,12 @@ object WaveformCache {
         return File(dir, "$songId.wf")
     }
 
+    /**
+     * Cek memori dulu (instan). Kalau cache proses ini kosong (mis. app baru
+     * saja di-restart), coba baca dari disk -- masih instan (baca file <1KB),
+     * cuma sedikit lebih lambat dari cache memori murni. Baru null kalau
+     * memang belum pernah di-cache sama sekali (lagu ini belum pernah dibuka).
+     */
     fun get(context: Context, songId: Long): FloatArray? {
         memCacheGet(songId)?.let { return it }
 
@@ -208,7 +280,9 @@ object WaveformCache {
             memCachePut(songId, data)
             data
         } catch (_: Exception) {
-
+            // File cache korup/setengah tertulis (mis. app di-kill di tengah
+            // penulisan) -- anggap saja cache miss, WaveformExtractor akan
+            // decode ulang & menimpa file ini lewat put() di bawah.
             null
         }
     }
@@ -220,7 +294,8 @@ object WaveformCache {
             data.forEach { buffer.putFloat(it) }
             diskFile(context, songId).writeBytes(buffer.array())
         } catch (_: Exception) {
-
+            // Gagal tulis ke disk (mis. storage penuh) bukan fatal -- waveform
+            // tetap tampil dari cache memori untuk sesi ini, cuma tidak persist.
         }
     }
 

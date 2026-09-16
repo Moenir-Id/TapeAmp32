@@ -187,8 +187,6 @@
     <string name="transport_stop">STOP</string>
     <string name="transport_ffwd">F.FWD</string>
     <string name="transport_shuffle">SHUFFLE</string>
-    <string name="notif_action_shuffle">Shuffle</string>
-    <string name="notif_action_close">Close app</string>
     <string name="transport_repeat">REPEAT</string>
 
 
@@ -395,6 +393,4 @@
     <string name="toast_backup_file_unreadable">Backup file could not be read.</string>
     <string name="toast_restore_success">Settings restored successfully. The app will restart automatically...</string>
     <string name="toast_restore_failed">Restore failed: this is not a valid TapeAmp 32 backup file.</string>
-    <!-- v2.7: dibacakan TalkBack untuk waveform seekbar -->
-    <string name="a11y_seek_position">Playback position</string>
 </resources>

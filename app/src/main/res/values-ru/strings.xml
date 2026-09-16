@@ -384,12 +384,4 @@
     <string name="streaming_edit_dialog_url_label">URL потока</string>
     <string name="streaming_edit_save">СОХРАНИТЬ</string>
     <string name="streaming_edit_cancel">ОТМЕНА</string>
-
-    <!-- v2.7: aksi notifikasi (shuffle / tutup app) & slider headroom EQ -->
-    <string name="notif_action_shuffle">Случайный порядок</string>
-    <string name="notif_action_close">Закрыть приложение</string>
-    <string name="eq_headroom_safety_label">МАКС. ГРОМКОСТЬ ↔ ЗАПАС ПО УРОВНЮ</string>
-    <string name="eq_headroom_safety_desc">Меньше — громче в целом, но лимитер чаще срабатывает на пресетах эквалайзера с большими или перекрывающимися подъёмами. Больше — запас безопаснее, но те же пресеты звучат тише.</string>
-    <!-- v2.7: dibacakan TalkBack untuk waveform seekbar -->
-    <string name="a11y_seek_position">Позиция воспроизведения</string>
 </resources>

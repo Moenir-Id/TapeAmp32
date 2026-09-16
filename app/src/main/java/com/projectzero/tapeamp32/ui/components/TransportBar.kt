@@ -35,6 +35,9 @@ import com.projectzero.tapeamp32.R
 import com.projectzero.tapeamp32.ui.theme.*
 import kotlin.math.roundToInt
 
+// Volume slider and the main transport bar (play/pause/skip buttons) plus its
+// button building block. Split out of TransportControls.kt.
+
 @Composable
 fun VerticalVolumeSlider(
     volume: Float,
@@ -71,6 +74,10 @@ fun VerticalVolumeSlider(
             modifier = Modifier.height(6.dp)
         )
 
+        /*
+         * FADER HOUSING (bezel logam klasik + area tick + slot + thumb)
+         */
+
         Box(
             modifier = Modifier
                 .width(32.dp)
@@ -91,6 +98,10 @@ fun VerticalVolumeSlider(
                 }
         ) {
 
+            /*
+             * OUTER BEZEL (panel logam gelap, kesan dicekungkan/inset)
+             */
+
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -110,6 +121,10 @@ fun VerticalVolumeSlider(
                         RoundedCornerShape(3.dp)
                     )
             )
+
+            /*
+             * SKALA TICK/NOTCH KLASIK (statis, dB-scale look, kedua sisi)
+             */
 
             Canvas(
                 modifier = Modifier.fillMaxSize()
@@ -141,6 +156,10 @@ fun VerticalVolumeSlider(
                 }
             }
 
+            /*
+             * SLOT/ALUR TENGAH (sempit, seperti celah fisik fader asli)
+             */
+
             Box(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
@@ -155,6 +174,10 @@ fun VerticalVolumeSlider(
                         RoundedCornerShape(2.dp)
                     )
             ) {
+
+                /*
+                 * ISIAN LEVEL YANG MENYALA DI DALAM SLOT
+                 */
 
                 Box(
                     modifier = Modifier
@@ -173,6 +196,12 @@ fun VerticalVolumeSlider(
                         )
                 )
             }
+
+            /*
+             * FADER CAP (TUAS) -- lebih lebar & metalik dari track,
+             * dengan garis pegangan (grip line) di tengah, khas tuas
+             * mixer/equalizer fisik klasik
+             */
 
             Box(
                 modifier = Modifier
@@ -204,6 +233,10 @@ fun VerticalVolumeSlider(
                 contentAlignment = Alignment.Center
             ) {
 
+                /*
+                 * GRIP LINE (garis tengah tuas, khas pegangan fader asli)
+                 */
+
                 Box(
                     modifier = Modifier
                         .fillMaxWidth(0.65f)
@@ -227,6 +260,10 @@ fun VerticalVolumeSlider(
     }
 }
 
+/* ============================================================
+ * TRANSPORT BAR
+ * ============================================================ */
+
 @Composable
 fun TransportBar(
     isPlaying: Boolean,
@@ -247,7 +284,11 @@ fun TransportBar(
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement =
-
+            // FIX: sebelumnya Arrangement.spacedBy(6.dp) memaketkan 7 tombol rapat
+            // di kiri (lebar tetap masing-masing), sehingga sisa lebar Row (yang
+            // seharusnya selebar Cassette Box + VU/VFD column di atasnya) tampak
+            // sebagai kotak hitam kosong di kanan. SpaceEvenly menyebar tombol
+            // merata ke seluruh lebar Row -- tidak ada lagi ruang kosong.
             Arrangement.SpaceEvenly,
         verticalAlignment =
             Alignment.CenterVertically
@@ -266,6 +307,13 @@ fun TransportBar(
             isPrimaryPlay = true,
             onClick = onPlayPause
         )
+
+        /*
+         * PAUSE hanya aktif ketika playback memang sedang berjalan.
+         *
+         * Jangan gunakan !isPlaying karena ketika STOP,
+         * PAUSE akan ikut terlihat aktif.
+         */
 
         TransportButton(
             icon = Icons.Filled.Pause,
@@ -286,6 +334,9 @@ fun TransportBar(
             onClick = onNext
         )
 
+        // REVERT: SHUFFLE & REPEAT dikembalikan ke ukuran yang SAMA dengan tombol
+        // transport lain (REW/PLAY/PAUSE/STOP/F.FWD) -- sesuai permintaan, seluruh
+        // tombol transport tetap seukuran, tidak dibedakan lagi lewat scale.
         TransportButton(
             icon = Icons.Filled.Shuffle,
             label = stringResource(R.string.transport_shuffle),
@@ -303,6 +354,10 @@ fun TransportBar(
         )
     }
 }
+
+/* ============================================================
+ * SINGLE TRANSPORT BUTTON
+ * ============================================================ */
 
 @Composable
 internal fun TransportButton(
@@ -331,6 +386,10 @@ internal fun TransportButton(
                     Brush.verticalGradient(
                         when {
 
+                            /*
+                             * PLAY AKTIF
+                             */
+
                             isPrimaryPlay && active -> {
                                 listOf(
                                     Color(0xFFFFD15A),
@@ -339,12 +398,20 @@ internal fun TransportButton(
                                 )
                             }
 
+                            /*
+                             * SHUFFLE / REPEAT AKTIF
+                             */
+
                             active -> {
                                 listOf(
                                     Color(0xFF302916),
                                     Color(0xFF19160E)
                                 )
                             }
+
+                            /*
+                             * NORMAL
+                             */
 
                             else -> {
                                 listOf(
@@ -382,6 +449,10 @@ internal fun TransportButton(
             contentAlignment =
                 Alignment.Center
         ) {
+
+            /*
+             * TOP HIGHLIGHT
+             */
 
             Box(
                 modifier = Modifier

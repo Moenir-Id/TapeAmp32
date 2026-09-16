@@ -66,6 +66,13 @@ private fun cassetteLabelShape(cutPx: Float) = GenericShape { size, _ ->
     close()
 }
 
+/* ============================================================
+ * SUDUT (DERAJAT) TITIK p RELATIF TERHADAP PUSAT c
+ * ============================================================
+ * Dipakai untuk gesture rotary seeking pada roda kaset -- mengukur
+ * perubahan sudut drag dari frame ke frame untuk menentukan arah putar
+ * (searah / berlawanan jarum jam) dan besarnya perubahan.
+ * ============================================================ */
 private fun angleDegrees(p: Offset, c: Offset): Float {
     return Math.toDegrees(
         atan2(
@@ -88,17 +95,44 @@ fun CassetteDeck(
     nrOn: Boolean = true,
     serial: String = "D90",
     side: String = "A",
-
+    // FITUR BARU: Rotary Wheel Gesture Seeking. Roda kaset (drawReel) sekarang
+    // interaktif terhadap gesture PUTAR (bukan lagi swipe horizontal biasa).
+    // Memutar searah jarum jam = seek MAJU, berlawanan jarum jam = seek MUNDUR.
+    // onSeekDelta dipanggil terus-menerus selama drag berlangsung dengan nilai
+    // berupa PERUBAHAN fraksi posisi (-1f..1f, boleh sangat kecil per frame);
+    // pemanggil tinggal menambahkannya ke posisi/progress saat ini.
     onSeekDelta: (Float) -> Unit = {},
-
+    // BARU: efek suara FF/RW ala kaset asli. Dipanggil terus-menerus SELAMA roda
+    // diputar manual dengan nilai speed/pitch multiplier saat ini (1f = normal).
+    // Pemanggil (PlayerScreen) meneruskan nilai ini ke ExoPlayer.playbackParameters.
+    // Otomatis dipanggil dengan 1f begitu jari diangkat (seeking selesai), supaya
+    // pitch & tempo audio kembali normal.
     onScrubSpeedChange: (Float) -> Unit = {},
-
+    // Fraksi posisi (0f..1f) yang di-seek untuk SATU putaran penuh (360 derajat)
+    // roda kaset. Nilai kecil = seeking presisi, nilai besar = seeking cepat.
     seekFractionPerFullRotation: Float = 0.10f,
-
+    // FIX (v1.4.1): sebelumnya toggle "Enable Reel Spinning Animation" di Settings
+    // tersimpan tapi tidak pernah dibaca di sini sama sekali -- roda kaset selalu
+    // berputar kalau isPlaying/isManualSeeking, apa pun isi toggle-nya. Sekarang
+    // parameter ini benar-benar menentukan boleh/tidaknya reelRotation berputar.
     reelAnimationEnabled: Boolean = true,
-
+    // BARU (patch "cassette side A/B"): double tap di mana pun pada bodi kaset (BUKAN
+    // di tape window/roda, supaya tidak bentrok dengan gesture rotary seeking di atas)
+    // untuk pindah Side A (Library) <-> Side B (Stream). Pemanggil (PlayerScreen) yang
+    // menentukan efek sampingnya lewat PlayerViewModel.toggleCassetteSide().
     onDoubleTap: () -> Unit = {}
 ) {
+
+    /*
+     * ============================================================
+     * FAST SPIN EFFECT (BARU)
+     * ------------------------------------------------------------
+     * manualSpinBoost meningkat mengikuti kecepatan gesture rotary
+     * (besarnya perubahan sudut per frame) selama roda diputar manual
+     * untuk seeking, lalu meluruh (decay) begitu jari diangkat --
+     * meniru efek visual pita kaset fisik yang diputar cepat (FF/RW).
+     * ============================================================
+     */
 
     var manualSpinBoost by remember { mutableFloatStateOf(0f) }
     var isManualSeeking by remember { mutableStateOf(false) }
@@ -134,6 +168,10 @@ fun CassetteDeck(
         label = "reel_rotation"
     )
 
+    // Reel tetap berputar visual baik saat playback berjalan MAUPUN saat
+    // sedang di-seek manual lewat gesture rotary (efek Fast Forward/Rewind),
+    // bukan hanya saat isPlaying -- KECUALI reelAnimationEnabled dimatikan lewat
+    // Settings, yang membekukan roda sepenuhnya (tidak berputar sama sekali).
     val reelRotation =
         if (reelAnimationEnabled && (isPlaying || isManualSeeking)) rotation else 0f
 
@@ -145,15 +183,34 @@ fun CassetteDeck(
             11.dp.toPx()
         }
 
+    // Ukuran (px) dari kotak "TAPE WINDOW" tempat kedua roda digambar --
+    // dibutuhkan untuk menghitung posisi pusat roda saat gesture rotary
+    // dimulai (lihat pointerInput di bawah).
     var tapeWindowSizePx by remember { mutableStateOf(IntSize.Zero) }
 
+    // Pusat rotasi aktif (roda kiri atau kanan, dipilih berdasarkan titik
+    // sentuh awal yang PALING DEKAT) & sudut terakhir, untuk menghitung
+    // delta sudut antar-frame drag.
     var activeReelCenter by remember { mutableStateOf(Offset.Zero) }
     var lastAngle by remember { mutableFloatStateOf(0f) }
 
+    // FIX (v1.5.1): onSeekDelta adalah lambda BARU setiap kali PlayerScreen
+    // recompose (mis. setiap posisi playback berganti, beberapa kali per detik).
+    // Sebelumnya pointerInput() di bawah di-key oleh (onSeekDelta, ...), jadi
+    // setiap recomposition itu MEMBATALKAN gesture drag rotary yang sedang
+    // berjalan dan memulainya lagi dari nol -- hasilnya seek roda kaset tidak
+    // pernah benar-benar "nyambung" (gesture selalu terputus di tengah jalan),
+    // dan isManualSeeking ikut ke-toggle true/false berkali-kali per detik
+    // sehingga efek glitch (band cyan/magenta) muncul-hilang secara acak alih-
+    // alih mengikuti gerakan jari. rememberUpdatedState memastikan callback
+    // yang dipanggil selalu versi terbaru TANPA perlu me-restart pointerInput.
     val currentOnSeekDelta by rememberUpdatedState(onSeekDelta)
     val currentOnScrubSpeedChange by rememberUpdatedState(onScrubSpeedChange)
     val currentSeekFractionPerFullRotation by rememberUpdatedState(seekFractionPerFullRotation)
 
+    // Sama alasannya dengan currentOnSeekDelta di atas: supaya pointerInput(Unit) untuk
+    // double tap di bawah tidak perlu di-restart tiap recomposition, tapi tetap memanggil
+    // versi terbaru dari lambda onDoubleTap yang dioper PlayerScreen.
     val currentOnDoubleTap by rememberUpdatedState(onDoubleTap)
 
     Box(
@@ -175,7 +232,10 @@ fun CassetteDeck(
                 color = skin.accent.copy(alpha = 0.65f),
                 shape = RoundedCornerShape(10.dp)
             )
-
+            // BARU (patch "cassette side A/B"): double tap di bodi kaset (dipasang di
+            // Box terluar, BUKAN di tape window yang sudah punya pointerInput drag
+            // gesture-nya sendiri untuk rotary seeking -- dua pointerInput terpisah di
+            // parent/child level ini tidak saling merebut gesture satu sama lain).
             .pointerInput(Unit) {
                 detectTapGestures(
                     onDoubleTap = { currentOnDoubleTap() }
@@ -183,6 +243,12 @@ fun CassetteDeck(
             }
             .padding(8.dp)
     ) {
+
+        /*
+         * ============================================================
+         * CASSETTE INNER FRAME
+         * ============================================================
+         */
 
         Box(
             modifier = Modifier
@@ -199,6 +265,12 @@ fun CassetteDeck(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
+
+                /*
+                 * ====================================================
+                 * PAPER LABEL
+                 * ====================================================
+                 */
 
                 Box(
                     modifier = Modifier
@@ -228,6 +300,10 @@ fun CassetteDeck(
                     Column(
                         modifier = Modifier.fillMaxSize()
                     ) {
+
+                        /*
+                         * TOP INFORMATION
+                         */
 
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -296,6 +372,10 @@ fun CassetteDeck(
                             }
                         }
 
+                        /*
+                         * TITLE
+                         */
+
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -353,6 +433,10 @@ fun CassetteDeck(
                             )
                         }
 
+                        /*
+                         * BOTTOM INFORMATION
+                         */
+
                         val sideADescription =
                             stringResource(R.string.cassette_side_a_description)
                         val sideBDescription =
@@ -376,7 +460,11 @@ fun CassetteDeck(
                                         ),
                                         RoundedCornerShape(2.dp)
                                     )
-
+                                    // BARU (patch "cassette side A/B string label"): label huruf
+                                    // "A"/"B" & content description-nya sekarang string resource
+                                    // (bukan literal hardcoded) supaya ikut sistem lokal ~10 bahasa
+                                    // yang sudah ada, dan pembaca layar mengumumkan artinya
+                                    // ("Side A – Library" / "Side B – Stream"), bukan cuma "A"/"B".
                                     .semantics {
                                         contentDescription =
                                             if (side == "B") sideBDescription
@@ -409,6 +497,14 @@ fun CassetteDeck(
                     }
                 }
 
+                /*
+                 * ====================================================
+                 * TAPE WINDOW (spool pita, jendela mika, pita -- BERSIH,
+                 * tanpa slider/knob/HUD volume lagi, memenuhi bidang
+                 * kaset secara simetris)
+                 * ====================================================
+                 */
+
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -431,7 +527,15 @@ fun CassetteDeck(
                         .onSizeChanged {
                             tapeWindowSizePx = it
                         }
-
+                        // FITUR BARU: Rotary Wheel Gesture Seeking. Gesture
+                        // horizontal swipe (next/prev) & vertikal (volume)
+                        // yang dulu ada di sini sudah DIHAPUS sepenuhnya --
+                        // digantikan gesture PUTAR pada roda kaset.
+                        // FIX (v1.5.1): key di-set ke Unit (bukan lagi onSeekDelta/
+                        // seekFractionPerFullRotation) supaya gesture drag rotary TIDAK
+                        // di-restart di tengah jalan saat PlayerScreen recompose selama
+                        // playback. Nilai terbaru tetap dipakai lewat rememberUpdatedState
+                        // di atas (currentOnSeekDelta / currentSeekFractionPerFullRotation).
                         .pointerInput(Unit) {
                             detectDragGestures(
                                 onDragStart = { startOffset ->
@@ -443,6 +547,8 @@ fun CassetteDeck(
                                     val leftX = w * 0.30f
                                     val rightX = w * 0.70f
 
+                                    // Pilih roda TERDEKAT dari titik sentuh awal
+                                    // sebagai pusat rotasi gesture ini.
                                     val distToLeft =
                                         abs(startOffset.x - leftX)
                                     val distToRight =
@@ -462,7 +568,7 @@ fun CassetteDeck(
                                 },
                                 onDragEnd = {
                                     isManualSeeking = false
-
+                                    // Balikin pitch/speed audio ke normal begitu jari diangkat.
                                     currentOnScrubSpeedChange(1f)
                                 },
                                 onDragCancel = {
@@ -477,29 +583,45 @@ fun CassetteDeck(
                                     var deltaAngle =
                                         currentAngle - lastAngle
 
+                                    // Normalisasi lompatan sudut di sekitar +-180 derajat
+                                    // (mis. dari 179 derajat ke -179 derajat) supaya delta
+                                    // tidak melompat besar secara keliru.
                                     if (deltaAngle > 180f) deltaAngle -= 360f
                                     if (deltaAngle < -180f) deltaAngle += 360f
 
                                     lastAngle = currentAngle
 
+                                    // Putaran SEARAH jarum jam (deltaAngle positif, koordinat
+                                    // layar y-ke-bawah) = seek MAJU. Berlawanan jarum jam
+                                    // (deltaAngle negatif) = seek MUNDUR (rewind).
                                     val seekDelta =
                                         (deltaAngle / 360f) * currentSeekFractionPerFullRotation
 
                                     currentOnSeekDelta(seekDelta)
 
+                                    // Fast Spin Effect: boost kecepatan visual roda
+                                    // mengikuti besar/kecepatan putaran gesture, dengan
+                                    // smoothing supaya tidak "kedutan".
                                     manualSpinBoost =
                                         (manualSpinBoost * 0.6f + abs(deltaAngle) * 0.45f)
                                             .coerceIn(0f, 40f)
 
+                                    // BARU: efek suara FF/RW -- pitch & tempo audio ikut naik
+                                    // (searah jarum jam/maju) atau turun (berlawanan/rewind)
+                                    // mengikuti intensitas manualSpinBoost yang sama dipakai
+                                    // untuk efek visual glitch, supaya suara & visual terasa
+                                    // "menyatu" -- makin cepat/jauh roda diputar, makin
+                                    // ekstrem juga pitch-nya berubah.
                                     val scrubIntensity =
                                         (manualSpinBoost / 40f).coerceIn(0f, 1f)
 
                                     val scrubSpeedMultiplier =
                                         if (deltaAngle >= 0f) {
-
+                                            // Searah jarum jam (maju): 1x .. 3x, pitch naik.
                                             1f + scrubIntensity * 2f
                                         } else {
-
+                                            // Berlawanan jarum jam (rewind): 1x .. 0.25x,
+                                            // pitch turun.
                                             1f - scrubIntensity * 0.75f
                                         }
 
@@ -518,6 +640,10 @@ fun CassetteDeck(
                         val w = size.width
                         val h = size.height
 
+                        /*
+                         * INNER WINDOW
+                         */
+
                         drawRoundRect(
                             color = Color(0xFF030405),
                             topLeft = Offset(
@@ -531,6 +657,10 @@ fun CassetteDeck(
                             cornerRadius =
                                 CornerRadius(5f, 5f)
                         )
+
+                        /*
+                         * GLASS REFLECTION
+                         */
 
                         drawRoundRect(
                             brush = Brush.horizontalGradient(
@@ -552,6 +682,10 @@ fun CassetteDeck(
                                 CornerRadius(5f, 5f)
                         )
 
+                        /*
+                         * TAPE PATH
+                         */
+
                         val tapeY = h * 0.50f
 
                         drawLine(
@@ -567,6 +701,10 @@ fun CassetteDeck(
                             strokeWidth = h * 0.14f
                         )
 
+                        /*
+                         * SUBTLE TAPE HIGHLIGHT
+                         */
+
                         drawLine(
                             color = Color(0xFF73502A)
                                 .copy(alpha = 0.20f),
@@ -580,6 +718,10 @@ fun CassetteDeck(
                             ),
                             strokeWidth = h * 0.025f
                         )
+
+                        /*
+                         * REEL
+                         */
 
                         fun drawReel(
                             cx: Float,
@@ -597,11 +739,19 @@ fun CassetteDeck(
                                     0.75f *
                                     tapeFraction
 
+                            /*
+                             * TAPE REEL
+                             */
+
                             drawCircle(
                                 color = Color(0xFF15100B),
                                 radius = tapeRadius,
                                 center = Offset(cx, cy)
                             )
+
+                            /*
+                             * OUTER METAL / PLASTIC RING
+                             */
 
                             drawCircle(
                                 color = skin.accent.copy(
@@ -611,11 +761,19 @@ fun CassetteDeck(
                                 center = Offset(cx, cy)
                             )
 
+                            /*
+                             * DARK INNER RING
+                             */
+
                             drawCircle(
                                 color = Color(0xFF080808),
                                 radius = baseRadius * 0.72f,
                                 center = Offset(cx, cy)
                             )
+
+                            /*
+                             * HUB
+                             */
 
                             drawCircle(
                                 color = Color(0xFF272727),
@@ -623,11 +781,19 @@ fun CassetteDeck(
                                 center = Offset(cx, cy)
                             )
 
+                            /*
+                             * HUB CENTER
+                             */
+
                             drawCircle(
                                 color = Color(0xFF050505),
                                 radius = baseRadius * 0.18f,
                                 center = Offset(cx, cy)
                             )
+
+                            /*
+                             * SIX REEL TEETH
+                             */
 
                             rotate(
                                 degrees = reelRotation,
@@ -660,6 +826,10 @@ fun CassetteDeck(
                                 }
                             }
 
+                            /*
+                             * REEL HIGHLIGHT
+                             */
+
                             drawCircle(
                                 color = Color.White.copy(
                                     alpha = 0.08f
@@ -671,6 +841,10 @@ fun CassetteDeck(
                                 )
                             )
                         }
+
+                        /*
+                         * LEFT / RIGHT REELS
+                         */
 
                         val leftX = w * 0.30f
                         val rightX = w * 0.70f
@@ -689,6 +863,23 @@ fun CassetteDeck(
                                 progressFraction
                                     .coerceIn(0f, 1f)
                         )
+
+                        /*
+                         * ====================================================
+                         * BARU (v1.3) -- GLITCH EFFECT SAAT RODA DIPUTAR MANUAL
+                         * ----------------------------------------------------
+                         * Efek "distorsi pita rusak" ala kaset asli yang diputar
+                         * cepat (FF/RW): garis-garis scan tipis dengan pergeseran
+                         * warna RGB (chromatic split cyan/magenta) + kedip statik
+                         * putih tipis, HANYA muncul selama isManualSeeking = true
+                         * (jari masih menyentuh roda). Polanya dibuat dari nilai
+                         * [rotation] yang SUDAH terus berubah tiap frame selama
+                         * seeking (reelRotation animateFloat di atas), jadi
+                         * "berkedut" mengikuti gerakan tanpa perlu ticker/state
+                         * tambahan. Intensitasnya naik mengikuti [manualSpinBoost]
+                         * -- makin cepat/jauh roda diputar, makin "rusak" efeknya.
+                         * ====================================================
+                         */
 
                         if (isManualSeeking) {
 
@@ -720,6 +911,9 @@ fun CassetteDeck(
                                         )
                                     ).toFloat() * w * 0.07f * glitchIntensity
 
+                                // Pecahan warna cyan (channel biru/hijau bergeser
+                                // ke satu arah) -- meniru chromatic aberration
+                                // pita kaset yang termagnetisasi/rusak.
                                 drawRect(
                                     color = Color.Cyan.copy(
                                         alpha = 0.11f * glitchIntensity
@@ -728,6 +922,8 @@ fun CassetteDeck(
                                     size = Size(w, bandHeight)
                                 )
 
+                                // Pecahan warna magenta (channel merah) bergeser
+                                // ke arah berlawanan.
                                 drawRect(
                                     color = Color.Magenta.copy(
                                         alpha = 0.11f * glitchIntensity
@@ -737,6 +933,9 @@ fun CassetteDeck(
                                 )
                             }
 
+                            // Kedip statik tipis menutupi seluruh jendela pita --
+                            // intensitasnya ikut naik-turun mengikuti kecepatan
+                            // putaran supaya terasa "hidup", bukan lapisan statis.
                             drawRect(
                                 color = Color.White.copy(
                                     alpha = 0.035f * glitchIntensity

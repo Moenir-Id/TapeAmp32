@@ -36,6 +36,9 @@ import com.projectzero.tapeamp32.R
 import com.projectzero.tapeamp32.ui.theme.*
 import com.projectzero.tapeamp32.viewmodel.Screen
 
+// Sidebar (tab list) and top toolbar/drill-down-header composables for the
+// Library screen. Split out of LibraryScreen.kt.
+
 @Composable
 internal fun DrillDownHeader(
     title: String,
@@ -108,6 +111,10 @@ internal fun PlayAllChip(enabled: Boolean, onClick: () -> Unit) {
     }
 }
 
+/* ================================================================
+ * SIDEBAR
+ * ================================================================ */
+
 @Composable
 internal fun LibrarySidebar(
     selectedTab: LibraryTab,
@@ -115,6 +122,13 @@ internal fun LibrarySidebar(
     isCompact: Boolean = false
 ) {
 
+    // PATCH (klasik, seragam dgn Equalizer): sebelumnya panel flat
+    // (PanelBlackAlt) tanpa border, menempel rata ke tepi layar/divider --
+    // sekarang jadi panel sendiri (PanelBlack + StrokeGold + sudut 7dp),
+    // sama seperti "VU METER PANEL" di EqualizerScreen.
+    // BARU (v1.5): lebih ramping (60dp, ikon saja tanpa label) saat window
+    // sedang dipersempit sistem (Split Screen/Multi-Window) -- lihat
+    // isCompact di MainActivity.AppRoot.
     Column(
         modifier = Modifier
             .width(if (isCompact) 60.dp else 102.dp)
@@ -182,6 +196,7 @@ internal fun LibrarySidebar(
             )
         }
 
+        // BARU (v1.2)
         LibraryTabItem(
             label = stringResource(R.string.library_tab_playlists),
             icon = Icons.Filled.PlaylistPlay,
@@ -196,6 +211,10 @@ internal fun LibrarySidebar(
     }
 }
 
+/* ================================================================
+ * SIDEBAR ITEM
+ * ================================================================ */
+
 @Composable
 internal fun LibraryTabItem(
     label: String,
@@ -205,6 +224,11 @@ internal fun LibraryTabItem(
     onClick: () -> Unit
 ) {
 
+    // PATCH (klasik, seragam dgn tab EQU/NADA/VOCAL/STEREO/BATAS di
+    // Equalizer): sebelumnya item terpilih pakai Gold flat, item tidak
+    // terpilih transparan tanpa border sama sekali -- sekarang keduanya
+    // punya border StrokeGold (item aktif fill GoldBright, item non-aktif
+    // fill PanelBlackAlt) supaya jadi "pill" yang identik dgn EqSubTabRow.
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -249,6 +273,10 @@ internal fun LibraryTabItem(
             modifier = Modifier.size(15.dp)
         )
 
+        // BARU (v1.5): label disembunyikan saat isCompact (Split Screen/Multi-
+        // Window) -- di sidebar selebar 60dp, teks penuh gampang terpotong;
+        // ikon (dengan contentDescription di atas untuk aksesibilitas) sudah
+        // cukup jelas menunjukkan tab mana yang mana.
         if (!isCompact) {
 
             Spacer(
@@ -270,7 +298,9 @@ internal fun LibraryTabItem(
                     } else {
                         FontWeight.Normal
                     },
-
+                // PATCH (v1.5, "seragamkan font"): disamakan dengan label tab
+                // sejenis di layar lain (NavRail & tab EQU/NADA/dst di
+                // Equalizer: 8sp/0.35sp) -- sebelumnya 9sp/0.2sp cuma di sini.
                 fontSize = 8.sp,
                 letterSpacing = 0.35.sp,
                 maxLines = 1
@@ -282,6 +312,10 @@ internal fun LibraryTabItem(
         modifier = Modifier.height(4.dp)
     )
 }
+
+/* ================================================================
+ * TOOLBAR
+ * ================================================================ */
 
 @Composable
 internal fun LibraryToolbar(
@@ -300,6 +334,10 @@ internal fun LibraryToolbar(
             Alignment.CenterVertically
     ) {
 
+        /* ========================================================
+         * SEARCH
+         * ======================================================== */
+
         Row(
             modifier = Modifier
                 .weight(1f)
@@ -307,7 +345,9 @@ internal fun LibraryToolbar(
                 .clip(
                     RoundedCornerShape(4.dp)
                 )
-
+                // PATCH (klasik): search bar sebelumnya pakai abu-abu teal
+                // (#101313/#343737) generik -- diganti PanelBlackAlt + StrokeGold
+                // supaya senada dengan tab sidebar & panel EQ/Settings.
                 .background(
                     PanelBlackAlt
                 )
@@ -366,6 +406,7 @@ internal fun LibraryToolbar(
             modifier = Modifier.width(8.dp)
         )
 
+        // BARU (v1.2): tombol "+ NEW" cuma tampil di tab PLAYLISTS.
         if (showNewPlaylistAction) {
 
             Row(
@@ -401,6 +442,15 @@ internal fun LibraryToolbar(
             Spacer(modifier = Modifier.width(8.dp))
         }
 
+        /* ========================================================
+         * SHUFFLE ALL
+         * ======================================================== */
+
+        // PATCH (klasik, seragam dgn tombol SAVE/UPLOAD di Equalizer):
+        // sebelumnya panel flat solid Gold dgn ikon/teks hitam (gaya CTA
+        // Material biasa) -- sekarang gradasi metalik gelap + border emas
+        // + teks/ikon GoldBright, PERSIS gaya EqActionButton supaya semua
+        // tombol "hardware" di app terasa satu keluarga.
         Row(
             modifier = Modifier
                 .height(32.dp)
@@ -448,3 +498,7 @@ internal fun LibraryToolbar(
         }
     }
 }
+
+/* ================================================================
+ * SONGS VIEW
+ * ================================================================ */

@@ -3,12 +3,26 @@ package com.projectzero.tapeamp32.data
 import org.json.JSONArray
 import org.json.JSONObject
 
+/**
+ * BARU (v1.2): model playlist buatan pengguna.
+ *
+ * Playlist cuma menyimpan REFERENSI ke lagu (lewat [Song.path], yang unik per file),
+ * bukan salinan objek Song penuh -- supaya kalau metadata lagu berubah setelah rescan
+ * library (judul/artist/album ke-update lewat tag baru), playlist otomatis ikut
+ * menunjuk ke versi terbaru tanpa perlu disinkronkan manual satu-satu.
+ */
 data class Playlist(
     val id: String,
     val name: String,
     val songPaths: List<String> = emptyList()
 )
 
+/**
+ * Serializer/parser JSON untuk daftar playlist, dipakai untuk menyimpan seluruh
+ * playlist ke DataStore (lihat SettingsKeys.PLAYLISTS_JSON) dan memulihkannya lagi
+ * saat aplikasi dibuka ulang. Pola & gaya kode sama persis dengan
+ * PowerampPresetParser/MusicRepository.serializeSongs supaya konsisten satu app.
+ */
 object PlaylistUtils {
 
     fun serializeList(playlists: List<Playlist>): String {

@@ -5,10 +5,31 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 
+// Core palette pulled from mockup
 val BgBlack = Color(0xFF0A0906)
 val PanelBlack = Color(0xFF15130E)
 val PanelBlackAlt = Color(0xFF1B1912)
 val CreamPaper = Color(0xFFE9DCC0)
+
+/* ================================================================
+ * THEME ACCENT -- BARU (v1.4)
+ *
+ * SEBELUMNYA: dropdown "Theme Accent Color" di Settings > UI &
+ * Appearance cuma menyimpan pilihan ke variabel lokal layar (var
+ * themeAccent by remember { ... }) dan TIDAK PERNAH dibaca di mana
+ * pun -- Gold/GoldBright/GoldDim/StrokeGold selalu berupa val
+ * konstan, jadi memilih "Neon 80s" atau "Silver Hi-Fi" betul-betul
+ * tidak berefek sama sekali di seluruh app.
+ *
+ * SEKARANG: Gold/GoldBright/GoldDim/StrokeGold diubah dari `val`
+ * (nilai tetap) menjadi computed property yang membaca
+ * ThemeAccentState.current (Compose State). Karena hampir semua
+ * border/ikon/teks emas di app ini memanggil keempat nama itu
+ * langsung, mengganti accent otomatis mengubah tampilan di SELURUH
+ * layar (Settings, Equalizer, Player, NavRail, dst) tanpa perlu
+ * menyentuh file lain satu per satu -- dan tetap reactive karena
+ * dibaca sebagai State di dalam scope @Composable.
+ * ================================================================ */
 
 enum class ThemeAccent(
     val displayName: String,
@@ -49,6 +70,8 @@ object ThemeAccentState {
     var current: ThemeAccent by mutableStateOf(ThemeAccent.GOLD_RETRO)
 }
 
+// Empat nama ini dipakai HAMPIR DI SEMUA LAYAR sebagai warna aksen utama --
+// sekarang mengikuti ThemeAccentState.current, bukan lagi nilai tetap.
 val Gold: Color get() = ThemeAccentState.current.gold
 val GoldBright: Color get() = ThemeAccentState.current.goldBright
 val GoldDim: Color get() = ThemeAccentState.current.goldDim
@@ -60,6 +83,9 @@ val VuGreen = Color(0xFF7CFC7C)
 val VuYellow = Color(0xFFE8D24C)
 val VuRed = Color(0xFFE63946)
 
+// VFD (Vacuum Fluorescent Display) status panel palette — phosphor teal-green
+// dipilih supaya kontras dengan panel VU (gold/amber), meniru layar VFD Hi-Fi
+// jadul (Kenwood/Marantz/Pioneer era 80-90an) yang biasanya bukan warna gold.
 val VfdGlass = Color(0xFF04100D)
 val VfdGlassDeep = Color(0xFF010705)
 val VfdPhosphor = Color(0xFF5CFFC0)
@@ -68,9 +94,12 @@ val VfdPhosphorGhost = Color(0xFF10241F)
 val VfdAmberPeak = Color(0xFFFF5A3C)
 val VfdAmberPeakDim = Color(0xFF3A1E16)
 
+// BARU: Hi-Res Audio Badge -- cyan terang dibedakan dari phosphor teal-green baris lain
+// supaya badge "HI-RES" langsung menonjol saat menyala, meniru LED Hi-Res khas DAC/AMP.
 val VfdCyanHiRes = Color(0xFF4CE0FF)
 val VfdCyanHiResDim = Color(0xFF1A3A44)
 
+// Cassette skins (10 total)
 data class CassetteSkin(
     val id: String,
     val label: String,

@@ -15,18 +15,25 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.ProgressBarRangeInfo
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.progressBarRangeInfo
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.setProgress
-import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
-import com.projectzero.tapeamp32.R
 import kotlin.math.max
-import kotlin.math.roundToInt
 
+/**
+ * BARU (v2.4, "Waveform Seekbar"): pengganti Slider polos di PlayerTrackBar,
+ * gambar bar waveform amplitude asli lagu (lihat WaveformExtractor) dan bisa
+ * di-tap / di-drag langsung di atas bar-nya untuk seek -- gaya visual
+ * scrubbing presisi ala aplikasi pemutar musik modern, bukan cuma garis/thumb builat seperti Slider
+ * Material biasa.
+ *
+ * @param waveform data amplitude 0f..1f per bucket (lihat WaveformExtractor).
+ *   NULL selagi masih loading/gagal -- ditampilkan sebagai garis datar tipis
+ *   supaya seekbar tetap kelihatan & tetap bisa dipakai seek walau waveform
+ *   belum siap (tidak nge-block interaksi user).
+ * @param progressFraction posisi putar sekarang, 0f..1f.
+ * @param onSeek dipanggil terus-menerus SELAMA drag/tap berlangsung dengan
+ *   fraksi baru 0f..1f (dikonsumsi sama seperti onSeek Slider sebelumnya di
+ *   PlayerTrackBar -- pemanggil tinggal kalikan ke durasi).
+ */
 @Composable
 fun WaveformSeekBar(
     waveform: FloatArray?,
@@ -38,6 +45,10 @@ fun WaveformSeekBar(
     scrubLineColor: Color = Color(0xFFFFF6DE)
 ) {
 
+    // FIX (pola sama dengan CassetteDeck onSeekDelta): onSeek adalah lambda BARU
+    // tiap recompose (posisi playback berubah beberapa kali per detik), jadi
+    // di-bungkus rememberUpdatedState supaya pointerInput() di bawah TIDAK perlu
+    // di-restart tiap kali posisi berubah -- gesture drag tetap "nyambung".
     val currentOnSeek by rememberUpdatedState(onSeek)
 
     var isDragging by remember { mutableStateOf(false) }
@@ -45,27 +56,8 @@ fun WaveformSeekBar(
 
     val displayFraction = if (isDragging) dragFraction else progressFraction
 
-    // v2.7 (aksesibilitas): sebelumnya seekbar ini cuma Canvas + pointerInput,
-    // jadi bagi TalkBack komponennya TIDAK ADA sama sekali -- tidak bisa
-    // difokus, posisi lagu tidak pernah dibacakan, dan seek mustahil dilakukan
-    // karena tap/drag mentah tidak diteruskan saat TalkBack aktif. Blok
-    // semantics di bawah membuatnya dikenali sebagai slider: posisinya
-    // dibacakan dalam persen, dan aksi "atur nilai" memanggil onSeek yang sama
-    // dengan jalur sentuh biasa.
-    val seekLabel = stringResource(R.string.a11y_seek_position)
-    val safeFraction = displayFraction.coerceIn(0f, 1f)
-
     Canvas(
         modifier = modifier
-            .semantics {
-                contentDescription = seekLabel
-                progressBarRangeInfo = ProgressBarRangeInfo(safeFraction, 0f..1f)
-                stateDescription = "${(safeFraction * 100f).roundToInt()}%"
-                setProgress { target ->
-                    currentOnSeek(target.coerceIn(0f, 1f))
-                    true
-                }
-            }
             .pointerInput(Unit) {
                 detectTapGestures { offset ->
                     val fraction = (offset.x / size.width).coerceIn(0f, 1f)
@@ -104,6 +96,12 @@ fun WaveformSeekBar(
 
         if (bars == null || bars.isEmpty()) {
 
+            /*
+             * FALLBACK: waveform belum siap (masih di-decode di background) atau
+             * gagal di-decode -- tampilkan garis datar tipis, tetap merefleksikan
+             * progress lewat warna, supaya seekbar tidak kelihatan kosong/rusak.
+             */
+
             drawLine(
                 color = inactiveColor,
                 start = Offset(0f, midY),
@@ -121,7 +119,9 @@ fun WaveformSeekBar(
 
             val barCount = bars.size
             val barSlotWidth = w / barCount
-
+            // Beri sedikit celah antar bar (gaya ramping modern, bukan
+            // blok penuh nyambung) -- minimal 1px supaya tidak hilang di layar
+            // kerapatan rendah.
             val barWidth = max(1f, barSlotWidth * 0.62f)
             val minBarHeight = 2.dp.toPx()
 
@@ -138,6 +138,19 @@ fun WaveformSeekBar(
                     barWidth / 2.5f, barWidth / 2.5f
                 )
 
+                // FIX ("waveform kayak nunggu lalu loncat per-bar, tidak mulus"):
+                // sebelumnya SATU bar cuma dicek posisi TENGAHNYA saja
+                // (barCenterFraction <= displayFraction) -> tiap bar cuma dua kemungkinan,
+                // aktif 100% atau nonaktif 100%. Karena tiap bar mewakili rentang waktu
+                // yang lumayan lebar, hasilnya playhead terasa "diam" selama masih di
+                // separuh awal bar, lalu tiba-tiba SELURUH bar itu berubah warna sekaligus
+                // begitu playhead lewat titik tengahnya -- bukan nyapu halus.
+                //
+                // Sekarang tiap bar dicek rentang penuhnya (barStartFraction..barEndFraction).
+                // Kalau playhead ada DI DALAM bar ini, bar itu digambar SETENGAH aktif
+                // (potong tepat di fraksi playhead di dalam bar itu) + setengah nonaktif,
+                // jadi batas warna bergerak halus mengikuti posisi persis playhead --
+                // bukan cuma lompat per-bar.
                 val barStartFraction = i.toFloat() / barCount
                 val barEndFraction = (i + 1).toFloat() / barCount
 
@@ -159,7 +172,11 @@ fun WaveformSeekBar(
                         )
                     }
                     else -> {
-
+                        // Playhead persis di dalam bar ini -- gambar nonaktif dulu sebagai
+                        // dasar (dengan sudut rounded utuh), lalu timpa bagian kiri sejauh
+                        // fraksi playhead di dalam bar ini dengan warna aktif memakai clip
+                        // rect, supaya sapuan warnanya presisi ke posisi playhead, bukan
+                        // cuma menyala/mati per seluruh bar.
                         drawRoundRect(
                             color = inactiveColor,
                             topLeft = Offset(barX, barTop),
@@ -184,6 +201,13 @@ fun WaveformSeekBar(
                 }
             }
         }
+
+        /*
+         * GARIS SCRUB: ditampilkan HANYA selagi jari masih menyentuh (isDragging),
+         * menampilkan indikator posisi presisi saat sedang di-drag --
+         * tidak dipaksa selalu tampil supaya tidak menumpuk visual dengan bar
+         * aktif/nonaktif selagi playback normal.
+         */
 
         if (isDragging) {
             drawLine(

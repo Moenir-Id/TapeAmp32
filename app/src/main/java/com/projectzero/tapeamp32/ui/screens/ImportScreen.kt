@@ -1,5 +1,7 @@
 package com.projectzero.tapeamp32.ui.screens
 
+import android.net.Uri
+import android.provider.DocumentsContract
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -30,6 +32,10 @@ import com.projectzero.tapeamp32.R
 import com.projectzero.tapeamp32.ui.theme.*
 import com.projectzero.tapeamp32.viewmodel.PlayerViewModel
 
+/* ================================================================
+ * IMPORT SCREEN
+ * ================================================================ */
+
 @Composable
 fun ImportScreen(
     vm: PlayerViewModel,
@@ -38,6 +44,9 @@ fun ImportScreen(
 ) {
 
     val library by vm.library.collectAsStateWithLifecycle()
+
+    // BARU (fitur multi-folder)
+    val musicFolders by vm.musicFolders.collectAsStateWithLifecycle()
 
     val isScanning by vm.isScanning.collectAsStateWithLifecycle(
         initialValue = false
@@ -59,11 +68,19 @@ fun ImportScreen(
             Alignment.CenterHorizontally
     ) {
 
+        /* ========================================================
+         * HEADER
+         * ======================================================== */
+
         ImportHeader()
 
         Spacer(
             modifier = Modifier.height(10.dp)
         )
+
+        /* ========================================================
+         * MAIN DROP / FOLDER AREA
+         * ======================================================== */
 
         Box(
             modifier = Modifier
@@ -91,13 +108,19 @@ fun ImportScreen(
                     Alignment.CenterHorizontally
             ) {
 
+                /* ================================================
+                 * FOLDER ICON
+                 * ================================================ */
+
                 Box(
                     modifier = Modifier
                         .size(70.dp)
                         .clip(
                             RoundedCornerShape(12.dp)
                         )
-
+                        // PATCH (klasik): ikon folder sebelumnya di atas panel
+                        // abu-abu gelap (#111515) -- diganti PanelBlackAlt + border
+                        // emas tipis supaya senada dengan panel gold lain.
                         .background(
                             PanelBlackAlt
                         )
@@ -135,6 +158,10 @@ fun ImportScreen(
                 Spacer(
                     modifier = Modifier.height(13.dp)
                 )
+
+                /* ================================================
+                 * PRIMARY TEXT
+                 * ================================================ */
 
                 Text(
                     text =
@@ -176,6 +203,10 @@ fun ImportScreen(
                     modifier = Modifier.height(12.dp)
                 )
 
+                /* ================================================
+                 * SECURITY / SCAN NOTE
+                 * ================================================ */
+
                 Text(
                     text =
                         stringResource(R.string.import_folder_only_note),
@@ -190,6 +221,88 @@ fun ImportScreen(
             modifier = Modifier.height(9.dp)
         )
 
+        /* ========================================================
+         * BARU (fitur multi-folder): daftar folder yang sudah
+         * ditambahkan, dengan tombol hapus per folder. Cuma tampil
+         * kalau sudah ada minimal 1 folder -- kalau belum ada folder
+         * apa pun, cukup card "PILIH FOLDER MUSIK" di atas yang
+         * tampil, tidak perlu section kosong ini ikut memakan ruang.
+         * ======================================================== */
+
+        if (musicFolders.isNotEmpty()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(PanelBlackAlt)
+                    .border(
+                        width = 1.dp,
+                        color = StrokeGold.copy(alpha = 0.4f),
+                        shape = RoundedCornerShape(8.dp)
+                    )
+                    .padding(10.dp)
+            ) {
+                Text(
+                    text = "FOLDER TERDAFTAR (${musicFolders.size})",
+                    color = GoldBright,
+                    fontFamily = MonoFont,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 9.sp,
+                    letterSpacing = 0.5.sp
+                )
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                musicFolders.forEach { folderUri ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.FolderOpen,
+                            contentDescription = null,
+                            tint = TextMuted,
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = folderDisplayName(folderUri),
+                            color = TextLight,
+                            fontFamily = MonoFont,
+                            fontSize = 9.sp,
+                            maxLines = 1,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Box(
+                            modifier = Modifier
+                                .size(20.dp)
+                                .clip(RoundedCornerShape(4.dp))
+                                .clickable { vm.removeMusicFolder(folderUri) },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "\u2715",
+                                color = TextMuted,
+                                fontFamily = MonoFont,
+                                fontSize = 10.sp
+                            )
+                        }
+                    }
+                }
+            }
+
+            Spacer(
+                modifier = Modifier.height(9.dp)
+            )
+        }
+
+        /* ========================================================
+         * SINGLE FILE IMPORT
+         * ======================================================== */
+
         ImportFileButton(
             onClick = onPickFiles
         )
@@ -198,6 +311,10 @@ fun ImportScreen(
             modifier = Modifier.height(12.dp)
         )
 
+        /* ========================================================
+         * PROGRESS PANEL
+         * ======================================================== */
+
         ImportProgressPanel(
             isScanning = isScanning,
             scanProgress = scanProgress,
@@ -205,6 +322,10 @@ fun ImportScreen(
         )
     }
 }
+
+/* ================================================================
+ * HEADER
+ * ================================================================ */
 
 @Composable
 private fun ImportHeader() {
@@ -251,6 +372,10 @@ private fun ImportHeader() {
     }
 }
 
+/* ================================================================
+ * SINGLE FILE BUTTON
+ * ================================================================ */
+
 @Composable
 private fun ImportFileButton(
     onClick: () -> Unit
@@ -263,7 +388,9 @@ private fun ImportFileButton(
             .clip(
                 RoundedCornerShape(5.dp)
             )
-
+            // PATCH (klasik): tombol import file sebelumnya panel abu-abu
+            // (#101313) polos tanpa border -- diganti PanelBlackAlt + border
+            // emas supaya seragam dengan tombol/panel klasik lain.
             .background(
                 PanelBlackAlt
             )
@@ -326,6 +453,10 @@ private fun ImportFileButton(
     }
 }
 
+/* ================================================================
+ * PROGRESS PANEL
+ * ================================================================ */
+
 @Composable
 private fun ImportProgressPanel(
     isScanning: Boolean,
@@ -353,6 +484,10 @@ private fun ImportProgressPanel(
                 vertical = 8.dp
             )
     ) {
+
+        /* ========================================================
+         * LABEL + PERCENT
+         * ======================================================== */
 
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -393,6 +528,10 @@ private fun ImportProgressPanel(
             modifier = Modifier.height(6.dp)
         )
 
+        /* ========================================================
+         * PROGRESS BAR
+         * ======================================================== */
+
         LinearProgressIndicator(
             progress = {
                 if (isScanning) {
@@ -411,7 +550,9 @@ private fun ImportProgressPanel(
                 .clip(
                     RoundedCornerShape(3.dp)
                 ),
-
+            // PATCH (klasik): track abu-abu (#292C2C) diganti StrokeGold supaya
+            // progress bar terlihat seperti meter amplifier klasik, bukan progress
+            // bar Material biasa.
             color = GoldBright,
             trackColor = StrokeGold
         )
@@ -419,6 +560,10 @@ private fun ImportProgressPanel(
         Spacer(
             modifier = Modifier.height(5.dp)
         )
+
+        /* ========================================================
+         * STATUS
+         * ======================================================== */
 
         Text(
             text =
@@ -438,6 +583,10 @@ private fun ImportProgressPanel(
         )
     }
 }
+
+/* ================================================================
+ * DASHED BORDER
+ * ================================================================ */
 
 private fun Modifier.drawDashedBorder(
     color: Color,
@@ -468,3 +617,21 @@ private fun Modifier.drawDashedBorder(
             )
     )
 }
+
+/* ================================================================
+ * BARU (fitur multi-folder): ubah SAF tree URI (yang aslinya panjang &
+ * teknis, mis. "content://.../tree/primary%3AMusic%2FRock") jadi nama
+ * folder yang gampang dibaca (cukup segmen terakhir path-nya, mis.
+ * "Rock") buat ditampilkan di daftar folder terdaftar.
+ * ================================================================ */
+
+private fun folderDisplayName(uri: Uri): String {
+    return runCatching {
+        val docId = DocumentsContract.getTreeDocumentId(uri)
+        // docId biasanya berformat "primary:Music/Rock" -- ambil bagian
+        // setelah ':' (path relatifnya), lalu segmen terakhir saja.
+        val relativePath = docId.substringAfter(':', docId)
+        relativePath.substringAfterLast('/').ifBlank { relativePath }
+    }.getOrDefault(uri.lastPathSegment ?: uri.toString())
+}
+

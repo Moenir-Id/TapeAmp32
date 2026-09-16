@@ -32,6 +32,10 @@ import com.projectzero.tapeamp32.viewmodel.PlayerViewModel
 import com.projectzero.tapeamp32.viewmodel.SleepTimerMode
 import kotlinx.coroutines.launch
 
+/* ================================================================
+ * SETTINGS CATEGORY
+ * ================================================================ */
+
 internal enum class SettingsCategory(
     val labelRes: Int,
     val titleRes: Int,
@@ -61,6 +65,10 @@ internal enum class SettingsCategory(
         Icons.Filled.Memory
     ),
 
+    // BARU (v2.0): kategori sendiri untuk Backup & Restore -- sebelumnya sempat
+    // ditaruh sebagai subsection di dalam SYSTEM, sekarang dipisah jadi menu
+    // tersendiri di sidebar supaya lebih gampang ditemukan (bukan tersembunyi di
+    // bawah toggle System lain).
     BACKUP_RESTORE(
         R.string.settings_cat_backup_label,
         R.string.settings_cat_backup_title,
@@ -68,6 +76,11 @@ internal enum class SettingsCategory(
     )
 }
 
+// BARU: sub-menu di dalam kategori SYSTEM -- sebelumnya SEMUA isi System
+// (Keep Screen Awake, Sleep Timer, Statusbar/Lock Screen, About/Changelog)
+// ditumpuk jadi satu scroll panjang. Sekarang SYSTEM menampilkan daftar
+// sub-menu dulu (mirip Settings > System bawaan Android), lalu tiap sub-menu
+// punya halamannya sendiri yang jauh lebih pendek.
 internal enum class SettingsSystemSubPage(
     val titleRes: Int,
     val descRes: Int,
@@ -100,11 +113,18 @@ internal enum class SettingsSystemSubPage(
     )
 }
 
+/* ================================================================
+ * SETTINGS SCREEN
+ * ================================================================ */
+
 @Composable
 fun SettingsScreen(
     vm: PlayerViewModel,
     onOpenStreaming: () -> Unit,
-
+    // BARU (v2.0): Backup & Restore semua pengaturan sekaligus -- lihat
+    // SettingsCategory.SYSTEM di bawah & MainActivity.backupSettingsLauncher/
+    // restoreSettingsLauncher. Default lambda kosong supaya preview/pemanggil lama
+    // tidak wajib diubah.
     onBackupSettings: () -> Unit = {},
     onRestoreSettings: () -> Unit = {}
 ) {
@@ -112,6 +132,8 @@ fun SettingsScreen(
         mutableStateOf(SettingsCategory.STREAMING_NETWORK)
     }
 
+    // BARU: sub-halaman aktif di dalam kategori SYSTEM. null = tampilkan daftar
+    // sub-menu (lihat SettingsSystemSubPage) alih-alih langsung isi pengaturan.
     var systemSubPage by remember {
         mutableStateOf<SettingsSystemSubPage?>(null)
     }
@@ -121,17 +143,43 @@ fun SettingsScreen(
     val context = LocalContext.current
     val activity = context as? android.app.Activity
 
+    // BARU: bahasa tampilan aplikasi saat ini (System > Language) -- dibaca sinkron
+    // dari SharedPreferences khusus LocaleManager, bukan dari DataStore/repo di atas.
     var appLanguage by remember {
         mutableStateOf(LocaleManager.getSavedLanguage(context))
     }
+
+    /* ------------------------------------------------------------
+     * LIBRARY SETTINGS
+     * ------------------------------------------------------------ */
 
     val autoScanOnStartup by repo.autoScanOnStartup.collectAsStateWithLifecycle(
         initialValue = true
     )
 
+    // BARU (v1.2): status pemindaian untuk tombol "Rescan Music Library Now" di
+    // bawah -- dipakai supaya label tombol berubah jadi "Scanning..." dan tidak
+    // bisa dipicu dobel selagi pemindaian sebelumnya masih berjalan.
     val isScanningLibrary by vm.isScanning.collectAsStateWithLifecycle(
         initialValue = false
     )
+
+    /* ------------------------------------------------------------
+     * UI / PLAYBACK / SYSTEM SETTINGS -- PATCH (v1.4)
+     *
+     * SEBELUMNYA: semua nilai di bawah ini cuma `var ... by remember
+     * { mutableStateOf(...) }` -- state lokal Composable ini SAJA.
+     * Efeknya dua lapis: (1) Theme Accent Color memang tidak pernah
+     * dibaca di mana pun jadi betul-betul tanpa efek visual, dan (2)
+     * seluruh toggle/dropdown di kategori UI & Appearance, Playback,
+     * dan sebagian System diam-diam RESET ke default setiap kali user
+     * pindah kategori/layar atau menutup app, karena tidak pernah
+     * ditulis ke DataStore sama sekali.
+     *
+     * SEKARANG: dibaca dari SettingsRepository (persist permanen,
+     * pola sama seperti autoScanOnStartup/keepScreenAwake/dll di atas) supaya
+     * pilihan user benar-benar tersimpan.
+     * ------------------------------------------------------------ */
 
     val themeAccent by repo.themeAccent.collectAsStateWithLifecycle(
         initialValue = "Gold Retro"
@@ -145,6 +193,18 @@ fun SettingsScreen(
         initialValue = true
     )
 
+    // FIX (v1.4.1): Gapless Playback, ReplayGain, Audio Output Engine, dan
+    // High-Performance DSP Threading DIHAPUS dari Settings -- keempatnya cuma
+    // toggle/dropdown dekoratif yang tidak pernah benar-benar mengubah perilaku
+    // ExoPlayer/DSP (dicek ulang: tidak direferensikan di file audio mana pun
+    // selain layar Settings & repository penyimpanannya sendiri), dan kontrol
+    // audio yang SUNGGUH nyata (EQ, Vocal, Stereo, Limiter, Bypass) sudah lengkap
+    // di layar Equalizer. Daripada dibiarkan jadi tombol yang menipu (kelihatan
+    // berfungsi padahal tidak), lebih jujur untuk dihapus sekalian dengan seluruh
+    // kategori PLAYBACK-nya. Key DataStore-nya sengaja dibiarkan ada di
+    // SettingsRepository (tidak dihapus) supaya tidak ada breaking change kalau
+    // suatu saat mau diimplementasi beneran.
+
     val ignoreShortTracks by repo.ignoreShortTracks.collectAsStateWithLifecycle(
         initialValue = true
     )
@@ -153,12 +213,21 @@ fun SettingsScreen(
         initialValue = true
     )
 
+    // BARU (v2.1): SLEEP TIMER. sleepTimerMinutesSetting = durasi terakhir yang dipilih
+    // (dari SettingsRepository, cuma dipakai untuk posisi awal slider). sleepTimerMode &
+    // sleepTimerRemainingMs = status HIDUP aktual dari PlayerViewModel (lihat komentar
+    // panjang di PlayerViewModel.startSleepTimer/startSleepTimerEndOfTrack).
     val sleepTimerMinutesSetting by repo.sleepTimerMin.collectAsStateWithLifecycle(
         initialValue = 0f
     )
     val sleepTimerMode by vm.sleepTimerMode.collectAsStateWithLifecycle()
     val sleepTimerRemainingMs by vm.sleepTimerRemainingMs.collectAsStateWithLifecycle()
 
+    // BARU (v1.4): "Keep Screen Awake During Playback" sekarang benar-benar
+    // mengunci layar lewat FLAG_KEEP_SCREEN_ON pada window Activity -- sebelumnya
+    // toggle ini cuma kosmetik, layar tetap bisa mati sendiri walau ON. Karena app
+    // ini single-Activity, flag yang di-set di sini tetap berlaku walau user lalu
+    // pindah ke layar Player/Library lain (bukan cuma selagi Settings terbuka).
     LaunchedEffect(keepScreenAwake) {
         (context as? android.app.Activity)?.window?.let { win ->
             if (keepScreenAwake) {
@@ -173,15 +242,27 @@ fun SettingsScreen(
         mutableStateOf(false)
     }
 
+    // BARU (v2.0): dialog konfirmasi sebelum RESTORE ALL SETTINGS -- aksi ini
+    // meng-CLEAR lalu menimpa SELURUH pengaturan & preset tersimpan (lihat
+    // SettingsRepository.importAllSettingsJson), jadi tidak boleh langsung terpicu
+    // dari satu tap saja seperti tombol EXPORT/BACKUP yang aman (read-only).
     var showRestoreConfirmDialog by remember {
         mutableStateOf(false)
     }
+
+    /* ============================================================
+     * ROOT
+     * ============================================================ */
 
     Row(
         modifier = Modifier
             .fillMaxSize()
             .background(BgBlack)
     ) {
+
+        /* ========================================================
+         * LEFT SIDEBAR
+         * ======================================================== */
 
         Column(
             modifier = Modifier
@@ -221,6 +302,10 @@ fun SettingsScreen(
             }
         }
 
+        /* ========================================================
+         * GOLD DIVIDER
+         * ======================================================== */
+
         Box(
             modifier = Modifier
                 .width(1.dp)
@@ -229,6 +314,10 @@ fun SettingsScreen(
                     StrokeGold.copy(alpha = 0.75f)
                 )
         )
+
+        /* ========================================================
+         * RIGHT CONTENT
+         * ======================================================== */
 
         Column(
             modifier = Modifier
@@ -288,6 +377,10 @@ fun SettingsScreen(
 
             when (category) {
 
+                /* =================================================
+                 * STREAMING & NETWORK
+                 * ================================================= */
+
                 SettingsCategory.STREAMING_NETWORK -> {
 
                     SettingsSectionTitle(
@@ -319,8 +412,16 @@ fun SettingsScreen(
                     )
                 }
 
+                /* =================================================
+                 * UI & APPEARANCE
+                 * ================================================= */
+
                 SettingsCategory.UI_APPEARANCE -> {
 
+                    // FIX (v1.4): dulu betul-betul tanpa efek sama sekali (lihat
+                    // catatan di Color.kt / Theme.kt) -- sekarang benar-benar
+                    // mengganti Gold/GoldBright/GoldDim/StrokeGold di SELURUH app
+                    // lewat vm.setThemeAccent(), plus tersimpan permanen.
                     SettingsDropdownRow(
                         label = stringResource(R.string.settings_label_theme_accent),
                         value = themeAccent,
@@ -333,6 +434,8 @@ fun SettingsScreen(
                         vm.setThemeAccent(it)
                     }
 
+                    // FIX (v1.4): tersimpan permanen ke DataStore (sebelumnya reset
+                    // tiap keluar dari layar Settings).
                     SettingsToggleRow(
                         label = stringResource(R.string.settings_label_compact_vu),
                         checked = compactVu
@@ -358,6 +461,10 @@ fun SettingsScreen(
                     }
                 }
 
+                /* =================================================
+                 * LIBRARY
+                 * ================================================= */
+
                 SettingsCategory.LIBRARY -> {
 
                     SettingsToggleRow(
@@ -372,6 +479,10 @@ fun SettingsScreen(
                         }
                     }
 
+                    // FIX (v1.4.1): sekarang beneran memfilter hasil scan (lihat
+                    // applyIgnoreShortTracksFilter() di PlayerViewModel) -- lagu dengan
+                    // durasi diketahui < 30 detik dikeluarkan dari library & antrian
+                    // setelah scan berikutnya (Rescan Music Library Now / restart app).
                     SettingsToggleRow(
                         label = stringResource(R.string.settings_label_ignore_short),
                         checked = ignoreShortTracks
@@ -388,6 +499,10 @@ fun SettingsScreen(
                         modifier = Modifier.height(8.dp)
                     )
 
+                    // BARU (v1.2): fitur "scan lagu lama" -- pemindaian manual yang
+                    // bisa dipicu kapan saja pengguna mau (bukan cuma diam-diam saat
+                    // startup), berguna setelah menambah file baru ke folder musik
+                    // yang sudah tersimpan tanpa perlu menutup-buka ulang aplikasi.
                     SettingsActionRow(
                         label = if (isScanningLibrary) {
                             stringResource(R.string.settings_action_scanning)
@@ -400,8 +515,16 @@ fun SettingsScreen(
                     )
                 }
 
+                /* =================================================
+                 * SYSTEM
+                 * ================================================= */
+
                 SettingsCategory.SYSTEM -> {
 
+                    // BARU: SYSTEM sekarang dua tingkat -- kalau belum ada sub-menu
+                    // dipilih, tampilkan daftarnya dulu (masing-masing baris pendek
+                    // + deskripsi), bukan langsung menumpuk semua isi System jadi
+                    // satu scroll panjang seperti sebelumnya.
                     if (activeSubPage == null) {
 
                         SettingsSystemSubPage.entries.forEach { subPage ->
@@ -413,8 +536,16 @@ fun SettingsScreen(
 
                     } else when (activeSubPage) {
 
+                        /* =========================================
+                         * SYSTEM > PLAYBACK & SCREEN
+                         * ========================================= */
+
                         SettingsSystemSubPage.PLAYBACK -> {
 
+                            // FIX (v1.4): sekarang benar-benar mengunci layar (lihat
+                            // LaunchedEffect(keepScreenAwake) di atas) DAN tersimpan
+                            // permanen -- sebelumnya cuma kosmetik, layar tetap bisa
+                            // mati sendiri walau toggle ini ON.
                             SettingsToggleRow(
                                 label = stringResource(R.string.settings_label_keep_screen_awake),
                                 checked = keepScreenAwake
@@ -427,6 +558,19 @@ fun SettingsScreen(
                                 }
                             }
                         }
+
+                        /* =========================================
+                         * SYSTEM > SLEEP TIMER -- BARU (v2.1)
+                         *
+                         * Dua opsi independen (pilih salah satu otomatis membatalkan
+                         * yang lain -- lihat PlayerViewModel.startSleepTimer/
+                         * startSleepTimerEndOfTrack): geser slider ke durasi tetap,
+                         * ATAU nyalakan "Stop After Current Track" untuk berhenti
+                         * begitu lagu yang sedang diputar sekarang selesai (tanpa
+                         * hitung mundur waktu). Status hidup (sisa waktu / "menunggu
+                         * lagu selesai") + tombol BATALKAN cuma muncul selagi salah
+                         * satu timer aktif.
+                         * ========================================= */
 
                         SettingsSystemSubPage.SLEEP_TIMER -> {
 
@@ -481,8 +625,19 @@ fun SettingsScreen(
                             }
                         }
 
+                        /* =========================================
+                         * SYSTEM > NOTIFICATIONS
+                         * ========================================= */
+
                         SettingsSystemSubPage.NOTIFICATIONS -> {
 
+                            // PATCH: kalau izin notifikasi pernah ditolak, sistem TIDAK
+                            // akan pernah menampilkan dialog izin itu lagi lewat kode --
+                            // ini penyebab paling umum control bar (statusbar/lockscreen)
+                            // tidak pernah muncul sama sekali walau musik tetap terdengar
+                            // diputar. Satu-satunya jalan keluar buat pengguna adalah
+                            // lewat halaman notification settings App ini secara manual,
+                            // jadi tombol ini langsung membukanya.
                             SettingsActionRow(
                                 label = stringResource(R.string.settings_action_open_notification_settings),
                                 onClick = {
@@ -497,6 +652,10 @@ fun SettingsScreen(
                                 }
                             )
                         }
+
+                        /* =========================================
+                         * SYSTEM > LANGUAGE -- BARU: multi-bahasa (ID/EN)
+                         * ========================================= */
 
                         SettingsSystemSubPage.LANGUAGE -> {
 
@@ -530,6 +689,8 @@ fun SettingsScreen(
                                 }
                             }
 
+                            // BARU: 8 bahasa tambahan -- pola persis sama seperti System/ID/EN
+                            // di atas, cuma label & kode bahasa yang beda tiap baris.
                             SettingsLanguageRow(
                                 label = stringResource(R.string.settings_lang_spanish),
                                 selected = appLanguage == LocaleManager.LANGUAGE_SPANISH
@@ -622,8 +783,35 @@ fun SettingsScreen(
                             )
                         }
 
+                        /* =========================================
+                         * SYSTEM > ABOUT
+                         * ========================================= */
+
                         SettingsSystemSubPage.ABOUT -> {
 
+                            // FIX (v2.0): sebelumnya hardcode "1.5" sejak v1.5 dan tidak
+                            // pernah diperbarui lagi walau app sudah beberapa kali naik
+                            // versi (sempat ganjil menampilkan "1.5" padahal build sudah
+                            // versionName "1.9") -- sekarang disamakan manual dengan
+                            // versionName di app/build.gradle.kts & entri paling atas
+                            // changelogEntries di bawah, supaya App Version di sini,
+                            // Changelog di dalam app, dan TapeAmp32_changelog.html selalu
+                            // menunjuk ke nomor versi yang sama persis.
+                            // FIX (v2.4): kejadian yang sama persis terulang lagi -- label ini
+                            // sempat ketinggalan di "2.2" walau app sudah naik ke versionName
+                            // "2.3" (v2.3 tidak sempat update baris ini). Sekarang disamakan lagi
+                            // manual dengan versionName di app/build.gradle.kts & entri paling
+                            // atas changelogEntries di bawah.
+                            // FIX AKAR MASALAH (v2.6): value di sini tadinya SELALU hardcode
+                            // manual, jadi bug "ketinggalan versi" ini terbukti berulang tiga
+                            // kali (v1.5, v2.2/2.3, dan lagi sebelum v2.6 disinkronkan).
+                            // Sekarang baca langsung dari BuildConfig.VERSION_NAME (di-generate
+                            // otomatis dari versionName di app/build.gradle.kts) -- baris ini
+                            // tidak akan pernah ketinggalan lagi karena tidak ada lagi angka
+                            // yang perlu diketik manual di sini. changelogEntries di bawah
+                            // masih string manual (karena berisi teks historis per versi),
+                            // tapi entri PALING ATAS-nya juga sudah ikut BuildConfig.VERSION_NAME
+                            // (lihat komentar di atas daftar changelogEntries).
                             SettingsInfoRow(
                                 label = stringResource(R.string.settings_label_app_version),
                                 value = BuildConfig.VERSION_NAME
@@ -638,6 +826,18 @@ fun SettingsScreen(
                         }
                     }
                 }
+
+                /* =================================================
+                 * BACKUP & RESTORE -- BARU (v2.0)
+                 *
+                 * Sebelumnya sempat jadi subsection di dalam SYSTEM, sekarang
+                 * kategori sendiri di sidebar. Kedua tombol di bawah memakai SAF
+                 * (Save As / Open) yang sama seperti EXPORT/UPLOAD preset EQ di
+                 * tab BATAS (Equalizer, ada sejak v1.2) -- lihat
+                 * MainActivity.backupSettingsLauncher/restoreSettingsLauncher.
+                 * Beda dari EXPORT preset EQ (cuma satu preset aktif), Backup di
+                 * sini mencakup SELURUH pengaturan sekaligus.
+                 * ================================================= */
 
                 SettingsCategory.BACKUP_RESTORE -> {
 
@@ -665,6 +865,9 @@ fun SettingsScreen(
                         modifier = Modifier.height(8.dp)
                     )
 
+                    // Sedikit penjelasan inline di bawah kedua tombol -- dipakai
+                    // supaya jelas cakupannya "SEMUA" tanpa harus buka dialog
+                    // konfirmasi dulu untuk tahu.
                     Text(
                         text = stringResource(R.string.settings_backup_restore_note),
                         color = TextMuted,
@@ -684,6 +887,9 @@ fun SettingsScreen(
         )
     }
 
+    // BARU (v2.0): konfirmasi RESTORE ALL SETTINGS -- baru memanggil
+    // onRestoreSettings() (buka SAF "Open" utk pilih file backup) setelah pengguna
+    // benar-benar menekan tombol konfirmasi, bukan langsung dari SettingsActionRow.
     if (showRestoreConfirmDialog) {
         AlertDialog(
             onDismissRequest = {
@@ -721,3 +927,7 @@ fun SettingsScreen(
         )
     }
 }
+
+/* ================================================================
+ * SIDEBAR ITEM
+ * ================================================================ */

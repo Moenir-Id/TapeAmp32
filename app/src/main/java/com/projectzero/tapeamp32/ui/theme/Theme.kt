@@ -18,6 +18,7 @@ val LabelStyle = TextStyle(
     letterSpacing = 1.5.sp
 )
 
+// Menyuplai Typography bawaan agar otomatis menggunakan font Retro Hi-Fi
 private val TapeAmpTypography = Typography(
     bodyLarge = TextStyle(fontFamily = DisplayFont, fontSize = 14.sp, color = TextLight),
     bodyMedium = TextStyle(fontFamily = DisplayFont, fontSize = 12.sp, color = TextLight),
@@ -26,7 +27,11 @@ private val TapeAmpTypography = Typography(
 
 @Composable
 fun TapeAmp32Theme(content: @Composable () -> Unit) {
-
+    // PATCH (v1.4): dipindah ke dalam fungsi @Composable (sebelumnya top-level
+    // private val yang cuma dihitung SEKALI) supaya darkColorScheme ikut dihitung
+    // ULANG setiap Gold/GoldDim berubah (mis. saat user ganti Theme Accent Color di
+    // Settings) -- kalau tetap top-level val, MaterialTheme tidak akan pernah tahu
+    // accent berubah walau Gold/GoldDim sendiri sudah reactive.
     val colorScheme = darkColorScheme(
         primary = Gold,
         secondary = GoldDim,

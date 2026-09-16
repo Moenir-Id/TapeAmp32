@@ -384,12 +384,4 @@
     <string name="streaming_edit_dialog_url_label">Stream-URL</string>
     <string name="streaming_edit_save">SPEICHERN</string>
     <string name="streaming_edit_cancel">ABBRECHEN</string>
-
-    <!-- v2.7: aksi notifikasi (shuffle / tutup app) & slider headroom EQ -->
-    <string name="notif_action_shuffle">Zufallswiedergabe</string>
-    <string name="notif_action_close">App schließen</string>
-    <string name="eq_headroom_safety_label">MAX. LAUTHEIT ↔ SICHERER HEADROOM</string>
-    <string name="eq_headroom_safety_desc">Niedriger = insgesamt lauter, aber der Limiter greift bei EQ-Presets mit starken oder überlappenden Anhebungen häufiger ein. Höher = sicherer Headroom, dafür leiser bei genau diesen Presets.</string>
-    <!-- v2.7: dibacakan TalkBack untuk waveform seekbar -->
-    <string name="a11y_seek_position">Wiedergabeposition</string>
 </resources>

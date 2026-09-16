@@ -39,6 +39,9 @@ import com.projectzero.tapeamp32.ui.theme.TextLight
 import com.projectzero.tapeamp32.ui.theme.TextMuted
 import kotlin.math.roundToInt
 
+// VOCAL / STEREO sub-menus plus their shared status-row composables and small
+// dB/balance formatting helpers. Split out of EqualizerScreen.kt.
+
 @Composable
 internal fun EqAutoStatusRow(
     savedPresetName: String?,
@@ -74,6 +77,10 @@ internal fun EqAutoStatusRow(
     }
 }
 
+// BARU (v1.9): baris status kecil di dalam kartu toggle REPLAY GAIN -- pola sama
+// persis dengan EqAutoStatusRow di atas. gainDb null berarti lagu yang sedang
+// diputar belum pernah terukur (sedang diukur SAAT INI juga, hasilnya baru
+// tersimpan setelah lagu ini selesai/berpindah).
 @Composable
 internal fun EqReplayGainStatusRow(
     gainDb: Double?,
@@ -110,6 +117,10 @@ internal fun EqReplayGainStatusRow(
     }
 }
 
+// BARU (patch "Crossfade"): baris status di dalam kartu toggle CROSSFADE --
+// pilihan durasi overlap lewat chip angka (bukan slider kontinu baru, supaya
+// tetap ringan & konsisten dengan pola statusContent lain di tab ini yang
+// semuanya berupa baris teks + tombol kecil, bukan kontrol besar terpisah).
 @Composable
 internal fun EqCrossfadeDurationRow(
     seconds: Float,
@@ -143,6 +154,11 @@ internal fun EqCrossfadeDurationRow(
     }
 }
 
+// BARU (v1.8): baris status kecil di dalam kartu toggle BIT-PERFECT MODE --
+// menunjukkan status OFFLOAD hardware AKTUAL (bukan cuma permintaan toggle),
+// dikonfirmasi real-time dari AudioTrackConfig yang dilaporkan ExoPlayer. Lihat
+// PlayerManager.offloadActive. Menjawab "JUJUR diakui" di changelog v1.6: status
+// ini sebelumnya cuma bisa dicek manual lewat adb logcat.
 @Composable
 internal fun EqOffloadStatusRow(offloadActive: Boolean) {
     Row(
@@ -171,6 +187,14 @@ internal fun EqOffloadStatusRow(offloadActive: Boolean) {
     }
 }
 
+// PATCH (v1.8, "seragamkan ukuran toggle"): EqToggleRow sekarang menerima
+// statusContent opsional, dirender DI DALAM kartu yang sama (border/background/
+// clip identik) di bawah baris toggle, dipisahkan garis tipis -- bukan sebagai
+// elemen lepas di luar kartu seperti sebelumnya. Toggle TANPA statusContent
+// (SOFT LIMITER, EQ BYPASS) tampil identik seperti sebelumnya; toggle DENGAN
+// statusContent (BIT-PERFECT MODE, AUTO EQ PER LAGU) jadi proporsional lebih
+// tinggi TAPI tetap satu kartu seragam, bukan blok terpisah yang terasa beda
+// ukuran dari toggle lain.
 @Composable
 internal fun EqToggleRow(
     label: String,
@@ -194,7 +218,9 @@ internal fun EqToggleRow(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable { onToggle() }
-
+                // PATCH (Skin Klasik / Slider-Knob-Toggle): baris dibuat sedikit
+                // lebih tinggi supaya rocker switch besar di kanan (lihat
+                // EqRockerSwitch) tidak terasa sempit/berdempetan dengan teks.
                 .padding(horizontal = 12.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -211,7 +237,9 @@ internal fun EqToggleRow(
                     text = description,
                     color = TextMuted,
                     fontFamily = MonoFont,
-
+                    // PATCH (v1.6, "seragamkan font"): disamakan dengan ukuran teks
+                    // keterangan/body sejenis di tab lain (7sp -- lihat paragraf info
+                    // di NADA/VOCAL/STEREO), sebelumnya 6.5sp sendirian di sini.
                     fontSize = 7.sp
                 )
             }
@@ -234,7 +262,9 @@ internal fun EqToggleRow(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-
+                    // PATCH (v1.8): inset horizontal 12dp -- SAMA dengan baris toggle
+                    // di atasnya -- supaya status ekstra terasa jadi bagian kartu yang
+                    // sama, bukan tempelan dengan ukuran/proporsi sendiri.
                     .padding(horizontal = 12.dp, vertical = 8.dp)
             ) {
                 statusContent()
@@ -242,6 +272,27 @@ internal fun EqToggleRow(
         }
     }
 }
+
+// ================================================================
+// BARU (patch "headroom slider") -- slider "MAX LOUDNESS <-> SAFE HEADROOM"
+// di tab BATAS (lihat EqLimiterSubMenu di EqualizerSubMenus.kt), terhubung
+// langsung ke ParametricEqAudioProcessor.headroomSafetyRatio lewat
+// PlayerViewModel.updateHeadroomSafetyRatio -> PlayerManager.setHeadroomSafetyRatio.
+//
+// Dibuat sebagai kartu mandiri (bukan di dalam EqToggleRow, karena kontrol ini
+// SELALU aktif/tidak punya on-off) tapi pakai bahasa visual kartu yang identik
+// (PanelBlackAlt + border StrokeGold + rounded 6dp) supaya tetap terasa satu
+// keluarga dengan SOFT LIMITER/EQ BYPASS/dll di tab yang sama. Slider-nya sendiri
+// pakai ClassicHorizontalSlider (dari SettingsSliderAndDropdown.kt, satu package
+// jadi tidak perlu import) -- fader horizontal bergaya hardware klasik yang sama
+// dipakai Sleep Timer di Settings, bukan Material3 Slider standar, supaya
+// konsisten dengan seluruh slider lain di app ini.
+//
+// Nilai internal (headroomSafetyRatio) adalah Double 0.0..1.0, tapi ditampilkan
+// & digeser sebagai persentase 0-100% di UI (lebih gampang dipahami pengguna
+// awam daripada pecahan 0.0-1.0 mentah) -- konversinya cuma di lapisan tampilan
+// ini, TIDAK mengubah rentang asli 0.0..1.0 yang dipakai di DSP/SettingsRepository.
+// ================================================================
 
 @Composable
 internal fun EqHeadroomSafetySlider(
@@ -292,7 +343,10 @@ internal fun EqHeadroomSafetySlider(
         ClassicHorizontalSlider(
             value = percent.toFloat(),
             onValueChange = { newPercent ->
-
+                // BARU: langsung diteruskan sebagai 0.0..1.0 ke ParametricEqAudioProcessor
+                // (lewat PlayerViewModel.updateHeadroomSafetyRatio) tiap slider digeser --
+                // bukan cuma saat jari diangkat -- supaya suara langsung berubah real-time
+                // sama seperti knop Vocal/Balance/Stereo Expansion lain di tab sebelah.
                 onValueChange(newPercent / 100.0)
             },
             range = 0f..100f,
@@ -311,6 +365,19 @@ internal fun EqHeadroomSafetySlider(
         )
     }
 }
+
+// ================================================================
+// ROCKER SWITCH -- BARU (patch "Skin Klasik / Slider-Knob-Toggle")
+//
+// Pengganti badge teks "ON"/"OFF" lama yang terlalu kecil sebagai area
+// sentuh (padding 10x5, font 8sp). Sekarang berupa tuas/rocker gaya
+// panel amplifier klasik: rel logam cekung (inset) selebar 56dp x
+// tinggi 30dp, dengan kepala tuas metalik bulat 24dp yang meluncur ke
+// kanan (ON, berpendar emas) atau ke kiri (OFF, redup). Seluruh badan
+// switch tetap ikut menerima ketukan lewat clickable di EqToggleRow,
+// jadi target sentuh efektifnya bukan cuma 24dp kepala tuas tapi
+// seluruh baris.
+// ================================================================
 
 @Composable
 internal fun EqRockerSwitch(
@@ -344,7 +411,7 @@ internal fun EqRockerSwitch(
             .clickable { onToggle() },
         contentAlignment = Alignment.CenterStart
     ) {
-
+        // Etsa "OFF" / "ON" di kedua ujung rel, khas panel hardware.
         Text(
             text = stringResource(R.string.eq_rocker_off),
             color = if (!isOn) TextMuted else Color(0xFF2A2A2A),
@@ -366,6 +433,7 @@ internal fun EqRockerSwitch(
                 .padding(end = 6.dp)
         )
 
+        // Kepala tuas (knob) metalik -- meluncur horizontal sesuai state.
         Box(
             modifier = Modifier
                 .padding(start = 2.dp)
@@ -389,6 +457,11 @@ internal fun EqRockerSwitch(
         )
     }
 }
+
+// ================================================================
+// SUB-MENU: VOCAL -- BARU (patch "DSP control knobs")
+// Tombol VOCAL (on/off) + knop bass & treble khusus vokal.
+// ================================================================
 
 @Composable
 internal fun EqVocalSubMenu(
@@ -478,6 +551,11 @@ internal fun EqVocalSubMenu(
         )
     }
 }
+
+// ================================================================
+// SUB-MENU: STEREO -- BARU (patch "DSP control knobs")
+// Knop Balance, knop Stereo Expansion, tombol Mono/Stereo.
+// ================================================================
 
 @Composable
 internal fun EqStereoSubMenu(
@@ -581,3 +659,22 @@ internal fun formatBalance(balance: Double): String {
         else -> "R$pct"
     }
 }
+
+// ================================================================
+// ROTARY KNOB -- BARU (patch "DSP control knobs"), revisi tampilan +
+// interaksi. Dipakai untuk semua kontrol kontinu di tab VOCAL &
+// STEREO (Vocal Bass/Treble, Balance, Stereo Expansion).
+//
+// TAMPILAN: dibuat menyerupai knop amplifier/tape deck analog klasik
+// -- bodi metalik gradasi (highlight di kiri-atas, gelap di kanan-
+// bawah seperti logam disorot lampu), skala tick melingkar di
+// sekeliling badan (mirip pelat skala potensiometer), tudung tengah
+// terangkat (cap), dan jarum penunjuk tebal ber-ujung bulat.
+//
+// INTERAKSI: drag sekarang berbasis SUDUT relatif ke pusat knop --
+// sentuh/geser di titik mana pun pada knop, jarum langsung mengikuti
+// ARAH jari terhadap pusat (bukan menghitung jarak drag vertikal
+// seperti sebelumnya). Ini persis cara knop fisik diputar (posisi
+// jari = posisi jarum), jadi jauh lebih responsif & tidak perlu
+// menggeser jauh untuk mencapai ujung skala.
+// ================================================================

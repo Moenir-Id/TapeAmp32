@@ -27,6 +27,9 @@ import com.projectzero.tapeamp32.R
 import com.projectzero.tapeamp32.data.Song
 import com.projectzero.tapeamp32.ui.theme.*
 
+// Flat song-list view: table header, song row, and empty-state composables.
+// Split out of LibraryScreen.kt.
+
 @Composable
 internal fun SongsView(
     songs: List<Song>,
@@ -45,6 +48,10 @@ internal fun SongsView(
 
         } else {
 
+            /* ====================================================
+             * TABLE HEADER
+             * ==================================================== */
+
             LibraryTableHeader()
 
             HorizontalDivider(
@@ -57,6 +64,10 @@ internal fun SongsView(
             Spacer(
                 modifier = Modifier.height(2.dp)
             )
+
+            /* ====================================================
+             * SONG LIST
+             * ==================================================== */
 
             LazyColumn(
                 modifier = Modifier.weight(1f)
@@ -80,6 +91,10 @@ internal fun SongsView(
                 }
             }
 
+            /* ====================================================
+             * FOOTER
+             * ==================================================== */
+
             Spacer(
                 modifier = Modifier.height(4.dp)
             )
@@ -93,6 +108,10 @@ internal fun SongsView(
         }
     }
 }
+
+/* ================================================================
+ * TABLE HEADER
+ * ================================================================ */
 
 @Composable
 internal fun LibraryTableHeader() {
@@ -154,6 +173,10 @@ internal fun LibraryHeaderText(
     )
 }
 
+/* ================================================================
+ * SONG ROW
+ * ================================================================ */
+
 @Composable
 internal fun SongRow(
     song: Song,
@@ -179,6 +202,10 @@ internal fun SongRow(
             Alignment.CenterVertically
     ) {
 
+        /* ========================================================
+         * TITLE
+         * ======================================================== */
+
         Text(
             text = song.title.ifBlank {
                 stringResource(R.string.library_unknown_title)
@@ -190,6 +217,10 @@ internal fun SongRow(
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.weight(2f)
         )
+
+        /* ========================================================
+         * ARTIST
+         * ======================================================== */
 
         Text(
             text = song.artist.ifBlank {
@@ -203,6 +234,10 @@ internal fun SongRow(
             modifier = Modifier.weight(1.45f)
         )
 
+        /* ========================================================
+         * ALBUM
+         * ======================================================== */
+
         Text(
             text = song.album.ifBlank {
                 stringResource(R.string.library_unknown_album)
@@ -215,6 +250,10 @@ internal fun SongRow(
             modifier = Modifier.weight(1.45f)
         )
 
+        /* ========================================================
+         * DURATION
+         * ======================================================== */
+
         Text(
             text = formatMs(
                 song.durationMs
@@ -226,6 +265,10 @@ internal fun SongRow(
             modifier = Modifier.width(58.dp)
         )
 
+        /* ========================================================
+         * FORMAT
+         * ======================================================== */
+
         Text(
             text = song.format.uppercase(),
             color = GoldBright,
@@ -235,6 +278,13 @@ internal fun SongRow(
             maxLines = 1,
             modifier = Modifier.width(52.dp)
         )
+
+        /* ========================================================
+         * BARU (v1.2): AKSI PLAYLIST
+         * - Di tab SONGS/ALBUMS/ARTISTS/FOLDERS: ikon "+" -> tambah ke playlist.
+         * - Di dalam sebuah playlist yang sedang dibuka: ikon tempat sampah ->
+         *   keluarkan lagu ini dari playlist tsb (tidak menghapus filenya).
+         * ======================================================== */
 
         Box(
             modifier = Modifier.width(26.dp),
@@ -265,11 +315,17 @@ internal fun SongRow(
         }
     }
 
+    // PATCH (klasik): divider baris lagu diganti StrokeGold tipis (sebelumnya
+    // abu-abu #202323) supaya konsisten dengan divider header tabel di atasnya.
     HorizontalDivider(
         color = StrokeGold.copy(alpha = 0.4f),
         thickness = 0.5.dp
     )
 }
+
+/* ================================================================
+ * EMPTY LIBRARY
+ * ================================================================ */
 
 @Composable
 internal fun EmptyLibraryView(
@@ -324,3 +380,13 @@ internal fun EmptyLibraryView(
         }
     }
 }
+
+/* ================================================================
+ * GROUP + DRILL-DOWN (Album/Artist/Folder)
+ *
+ * BARU (v1.2): sebelumnya cuma GroupedLibraryView yang menampilkan daftar
+ * grup TANPA bisa diketuk (mati/dekoratif). Sekarang mengetuk sebuah grup
+ * membuka daftar lagunya (drill-down), memakai SongsView yang sama dengan
+ * tab SONGS supaya perilakunya konsisten (search header diganti header
+ * back di LibraryScreen di atas).
+ * ================================================================ */
