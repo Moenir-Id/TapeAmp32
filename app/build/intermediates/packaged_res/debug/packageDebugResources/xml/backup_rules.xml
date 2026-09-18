@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Aturan backup untuk Android 11 ke bawah (android:fullBackupContent).
+
+  Yang DIBACKUP: preferensi DataStore: preset EQ, bahasa, tema, stasiun
+  radio favorit, dan setting lain, supaya user ganti HP tidak kehilangan
+  konfigurasinya.
+
+  Yang TIDAK dibackup: isi cacheDir (cache waveform per lagu). Isinya
+  menunjuk ke ID lagu di MediaStore HP LAMA, jadi percuma dipulihkan ke HP
+  baru dan cuma bikin ukuran backup membengkak.
+-->
+<full-backup-content>
+    <include domain="file" path="datastore/" />
+    <exclude domain="cache" path="." />
+    <exclude domain="external_cache" path="." />
+</full-backup-content>

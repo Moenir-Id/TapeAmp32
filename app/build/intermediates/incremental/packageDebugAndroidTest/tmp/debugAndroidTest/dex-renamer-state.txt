@@ -1,0 +1,10 @@
+#Fri Sep 18 13:26:55 ICT 2026
+base.0=E\:\\Munir Backup 2024\\TapeAmp32\\TapeAmp 32 Repo\\app\\build\\intermediates\\dex\\debugAndroidTest\\mergeProjectDexDebugAndroidTest\\0\\classes.dex
+base.1=E\:\\Munir Backup 2024\\TapeAmp32\\TapeAmp 32 Repo\\app\\build\\intermediates\\dex\\debugAndroidTest\\mergeProjectDexDebugAndroidTest\\15\\classes.dex
+base.2=E\:\\Munir Backup 2024\\TapeAmp32\\TapeAmp 32 Repo\\app\\build\\intermediates\\global_synthetics_dex\\debugAndroidTest\\generateDebugAndroidTestGlobalSynthetics\\classes.dex
+path.0=0/classes.dex
+path.1=15/classes.dex
+path.2=classes.dex
+renamed.0=classes.dex
+renamed.1=classes2.dex
+renamed.2=classes3.dex

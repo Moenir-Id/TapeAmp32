@@ -12,10 +12,13 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.session.CommandButton
 import androidx.media3.session.DefaultMediaNotificationProvider
 import androidx.media3.session.LibraryResult
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
+import androidx.media3.session.SessionCommand
+import androidx.media3.session.SessionResult
 import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
@@ -32,6 +35,15 @@ import kotlinx.coroutines.launch
 
 private const val TAG = "TapeAmpPlaybackSvc"
 private const val NOTIFICATION_CHANNEL_ID = "tapeamp32_media_playback_channel"
+
+// BARU (fitur "tombol Shuffle & Close di notifikasi", ala Poweramp): dua
+// SessionCommand custom -- Shuffle & Close BUKAN Player command standar
+// yang otomatis muncul di notifikasi Media3 (beda dari Play/Pause/Next/Prev
+// yang otomatis terdeteksi dari Player.getAvailableCommands()). Makanya
+// harus didaftarkan manual sebagai custom command + custom layout, lihat
+// onConnect()/onCustomCommand() di LibrarySessionCallback di bawah.
+private const val CUSTOM_COMMAND_TOGGLE_SHUFFLE = "com.projectzero.tapeamp32.TOGGLE_SHUFFLE"
+private const val CUSTOM_COMMAND_CLOSE_APP = "com.projectzero.tapeamp32.CLOSE_APP"
 
 // BARU (Android Auto): id node root & folder "Semua Lagu" di pohon Browse yang
 // ditampilkan Android Auto. Cuma 2 level (root -> Semua Lagu -> daftar lagu datar)
@@ -160,6 +172,18 @@ class PlaybackService : MediaLibraryService() {
 
         Log.d(TAG, "MediaLibrarySession dibuat: ${mediaSession != null}")
 
+        // BARU (fitur "tombol Shuffle di notifikasi"): tiap status Shuffle
+        // berubah (dari mana pun -- tombol di app, atau tombol notifikasi
+        // ini sendiri lewat requestToggleShuffle() di bawah), refresh
+        // customLayout notifikasi supaya ikonnya ikut ganti
+        // (ic_notif_shuffle_on <-> ic_notif_shuffle_off), bukan diam di
+        // ikon lama walau status sebenarnya sudah berubah.
+        serviceScope.launch {
+            playerManager.shuffleOn.collect { isOn ->
+                mediaSession?.setCustomLayout(buildCustomLayout(isOn))
+            }
+        }
+
         // FIX UTAMA (root cause kontrol media statusbar/lockscreen TIDAK PERNAH muncul,
         // dikonfirmasi via debug logcat: onIsPlayingChanged/onPlaybackStateChanged jalan
         // normal, tapi onGetSession() & onUpdateNotification() TIDAK PERNAH sekalipun
@@ -268,7 +292,95 @@ class PlaybackService : MediaLibraryService() {
      * MediaSession.player yang sama (ExoPlayer milik PlayerManager) seperti kontrol
      * statusbar/lockscreen/headset yang sudah beres sebelumnya.
      */
+    // BARU (fitur "tombol Shuffle & Close di notifikasi", ala Poweramp):
+    // bikin daftar CommandButton buat customLayout notifikasi. Ikon shuffle
+    // BERGANTI sesuai [shuffleOn] (ic_notif_shuffle_on vs _off) -- makanya
+    // fungsi ini dipanggil ulang tiap playerManager.shuffleOn berubah (lihat
+    // observer di onCreate()), bukan cuma sekali di awal.
+    private fun buildCustomLayout(shuffleOn: Boolean): ImmutableList<CommandButton> {
+        val shuffleButton = CommandButton.Builder()
+            .setDisplayName(getString(if (shuffleOn) R.string.notif_shuffle_on else R.string.notif_shuffle_off))
+            .setIconResId(if (shuffleOn) R.drawable.ic_notif_shuffle_on else R.drawable.ic_notif_shuffle_off)
+            .setSessionCommand(SessionCommand(CUSTOM_COMMAND_TOGGLE_SHUFFLE, android.os.Bundle.EMPTY))
+            .build()
+        val closeButton = CommandButton.Builder()
+            .setDisplayName(getString(R.string.notif_close))
+            .setIconResId(R.drawable.ic_notif_close)
+            .setSessionCommand(SessionCommand(CUSTOM_COMMAND_CLOSE_APP, android.os.Bundle.EMPTY))
+            .build()
+        return ImmutableList.of(shuffleButton, closeButton)
+    }
+
     private inner class LibrarySessionCallback : MediaLibrarySession.Callback {
+
+        // BARU (fitur "tombol Shuffle & Close di notifikasi", ala Poweramp):
+        // onConnect() menentukan command APA SAJA yang boleh dipakai
+        // controller (termasuk notifikasi Media3 sendiri) buat sesi ini.
+        // Default (kalau tidak di-override) cuma kasih SessionCommand
+        // kosong -- custom command TOGGLE_SHUFFLE/CLOSE_APP di atas WAJIB
+        // ditambahkan manual ke availableSessionCommands di sini, kalau
+        // tidak, tombolnya di notifikasi tidak akan pernah berfungsi
+        // (tertekan tapi tidak memicu onCustomCommand() di bawah).
+        // setCustomLayout() di sini yang membuat 2 tombol itu BENERAN
+        // muncul sebagai ikon di notifikasi Media3 (DefaultMediaNotificationProvider
+        // otomatis merender customLayout kalau slot-nya cukup).
+        override fun onConnect(
+            session: MediaSession,
+            controller: MediaSession.ControllerInfo
+        ): MediaSession.ConnectionResult {
+            val baseResult = super.onConnect(session, controller)
+            val sessionCommands = baseResult.availableSessionCommands.buildUpon()
+                .add(SessionCommand(CUSTOM_COMMAND_TOGGLE_SHUFFLE, android.os.Bundle.EMPTY))
+                .add(SessionCommand(CUSTOM_COMMAND_CLOSE_APP, android.os.Bundle.EMPTY))
+                .build()
+            return MediaSession.ConnectionResult.accept(
+                sessionCommands,
+                baseResult.availablePlayerCommands
+            )
+        }
+
+        // Dipanggil begitu controller (termasuk notifikasi) beneran nge-connect
+        // -- customLayout awal (ikon shuffle sesuai status TERKINI + ikon
+        // close) langsung dipasang di sini, supaya begitu notifikasi pertama
+        // kali muncul, ikonnya sudah benar (bukan menunggu perubahan status
+        // shuffle pertama baru muncul).
+        override fun onPostConnect(session: MediaSession, controller: MediaSession.ControllerInfo) {
+            super.onPostConnect(session, controller)
+            session.setCustomLayout(buildCustomLayout(playerManager.shuffleOn.value))
+        }
+
+        // BARU (fitur "tombol Shuffle & Close di notifikasi"): dipanggil
+        // tiap salah satu dari 2 custom command di atas ditekan dari
+        // notifikasi/lockscreen.
+        override fun onCustomCommand(
+            session: MediaSession,
+            controller: MediaSession.ControllerInfo,
+            customCommand: SessionCommand,
+            args: android.os.Bundle
+        ): com.google.common.util.concurrent.ListenableFuture<SessionResult> {
+            when (customCommand.customAction) {
+                CUSTOM_COMMAND_TOGGLE_SHUFFLE -> {
+                    // Tidak langsung ubah _shuffleOn/reorder di sini --
+                    // PlaybackService tidak tahu isi _library sama sekali.
+                    // Cukup kirim sinyal, PlayerViewModel yang sedang
+                    // "dengerin" (lihat init block-nya) yang jalanin
+                    // toggleShuffle() lengkap, lalu hasilnya balik lagi ke
+                    // sini lewat observer playerManager.shuffleOn di
+                    // onCreate() (yang otomatis refresh customLayout).
+                    playerManager.requestToggleShuffle()
+                }
+                CUSTOM_COMMAND_CLOSE_APP -> {
+                    // BARU (tombol Close/X ala Poweramp): stop total
+                    // (bukan cuma pause) lalu matikan foreground service --
+                    // notifikasi media hilang dari status bar sepenuhnya,
+                    // persis perilaku tombol X di Poweramp.
+                    playerManager.stopAndRelease()
+                    stopForeground(STOP_FOREGROUND_REMOVE)
+                    stopSelf()
+                }
+            }
+            return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
+        }
 
         // REVISI KEDUA (bug "double click earphone/TWS sama saja dengan klik sekali,
         // selalu jadi play/pause"): fix pertama (onPlayerCommandRequest di bawah)

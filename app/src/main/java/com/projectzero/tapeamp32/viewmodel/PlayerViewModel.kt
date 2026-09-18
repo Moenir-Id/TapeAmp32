@@ -399,6 +399,20 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     val streamBitrateKbps get() = playerManager.streamBitrateKbps
 
     init {
+        // BARU (fitur "tombol Shuffle di notifikasi", ala Poweramp): dengerin
+        // sinyal dari PlayerManager.shuffleToggleRequests() -- dikirim tiap
+        // tombol Shuffle di notifikasi/lockscreen ditekan (dari
+        // PlaybackService, yang tidak punya akses langsung ke ViewModel ini).
+        // Begitu sinyal masuk, jalankan toggleShuffle() yang SAMA PERSIS
+        // dipakai tombol Shuffle di dalam app -- supaya reorder queue &
+        // persist ke DataStore tetap konsisten dari jalur mana pun tombolnya
+        // ditekan.
+        viewModelScope.launch {
+            playerManager.shuffleToggleRequests.collect {
+                toggleShuffle()
+            }
+        }
+
         // Polling posisi playback ~15fps untuk kehalusan animasi pita kaset & slider.
         // Sekalian jadi tempat menyimpan lagu + posisi terakhir secara berkala (tiap ~3 detik
         // saat sedang main), supaya kalau app ditutup paksa (bukan lewat tombol pause/back),
@@ -547,6 +561,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
             // mengecek _shuffleOn.value dan otomatis mengacak queue kalau true
             // (lihat fix bug shuffle sebelumnya di fungsi itu).
             _shuffleOn.value = restoredShuffle
+            playerManager.setShuffleOnState(restoredShuffle)
             _headroomSafetyRatio.value = restoredHeadroomSafetyRatio
 
             playerManager.setVocalEnabled(restoredVocalOn)
@@ -1248,6 +1263,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         val shuffled = ShuffleQueue.shuffled(_library.value)
         _queue.value = shuffled
         _shuffleOn.value = true
+        playerManager.setShuffleOnState(true)
         // BARU (fix bug shuffle tidak persist)
         persistShuffleOn(true)
         queueIndex = 0
@@ -1291,6 +1307,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         // tombol Shuffle "memaksa" pindah balik ke Library dengan sendirinya.
         val turningOn = !_shuffleOn.value
         _shuffleOn.value = turningOn
+        playerManager.setShuffleOnState(turningOn)
         // BARU (fix bug shuffle tidak persist)
         persistShuffleOn(turningOn)
 

@@ -393,4 +393,9 @@
     <string name="toast_backup_file_unreadable">Backup file could not be read.</string>
     <string name="toast_restore_success">Settings restored successfully. The app will restart automatically...</string>
     <string name="toast_restore_failed">Restore failed: this is not a valid TapeAmp 32 backup file.</string>
+
+    <!-- BARU (fitur "tombol Shuffle & Close di notifikasi", ala Poweramp) -->
+    <string name="notif_shuffle_on">Shuffle on</string>
+    <string name="notif_shuffle_off">Shuffle off</string>
+    <string name="notif_close">Close</string>
 </resources>

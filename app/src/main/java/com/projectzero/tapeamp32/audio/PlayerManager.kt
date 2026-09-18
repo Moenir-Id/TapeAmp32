@@ -77,6 +77,47 @@ class PlayerManager private constructor(private val context: Context) {
     private var hasRetriedAfterError = false
 
     private val _vuLevels = MutableStateFlow(0f to 0f)
+
+    /* ================================================================
+     * BARU (fitur "tombol Shuffle & Close di notifikasi", ala Poweramp):
+     * status ON/OFF Shuffle yang SEBENARNYA hidup di PlayerViewModel
+     * (_shuffleOn -- karena logic shuffle butuh akses ke _library, reorder
+     * queue, dan persist ke DataStore, yang semuanya cuma ada di ViewModel).
+     * PlaybackService (yang bikin notifikasi) TIDAK punya akses ke
+     * PlayerViewModel sama sekali -- cuma ke PlayerManager (singleton ini).
+     *
+     * Jadi PlayerManager dipakai sebagai "jembatan" komunikasi 2 arah:
+     * 1) shuffleOn di sini di-SET oleh ViewModel tiap kali _shuffleOn
+     *    berubah (lihat setShuffleOnState()) -- PlaybackService baca ini
+     *    buat nentuin ikon notifikasi (ic_notif_shuffle_on/off).
+     * 2) requestToggleShuffle() dipanggil PlaybackService tiap tombol
+     *    Shuffle di notifikasi ditekan -- ViewModel yang "dengerin" sinyal
+     *    ini (lihat init block di PlayerViewModel) lalu jalanin
+     *    toggleShuffle()-nya sendiri yang lengkap (reorder + persist).
+     * ================================================================ */
+
+    private val _shuffleOn = MutableStateFlow(false)
+    val shuffleOn: StateFlow<Boolean> = _shuffleOn
+
+    fun setShuffleOnState(value: Boolean) {
+        _shuffleOn.value = value
+    }
+
+    private val _shuffleToggleRequests = kotlinx.coroutines.flow.MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    val shuffleToggleRequests: kotlinx.coroutines.flow.SharedFlow<Unit> = _shuffleToggleRequests
+
+    fun requestToggleShuffle() {
+        _shuffleToggleRequests.tryEmit(Unit)
+    }
+
+    // BARU (tombol Close/X di notifikasi, ala Poweramp): stop playback total
+    // & minta service berhenti sepenuhnya (bukan cuma pause) -- beda dari
+    // pause biasa, ini yang bikin notifikasi media hilang total dari status
+    // bar, persis perilaku tombol X di Poweramp.
+    fun stopAndRelease() {
+        player.stop()
+        player.playWhenReady = false
+    }
     val vuLevels: StateFlow<Pair<Float, Float>> = _vuLevels
 
     // BARU: status DSP Audio Engine (EQ / Tape Saturation aktif atau bypass) dan

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    BARU (Widget "seekbar"). Layer standar ProgressBar horizontal RemoteViews:
+    android:id/background = track redup, android:id/progress = isian emas yang
+    di-clip sesuai posisi lagu (lihat RemoteViews.setProgressBar() di
+    PlayerWidgetProvider.buildRemoteViews()).
+
+    JUJUR diakui: ini seekbar VISUAL SAJA (menampilkan posisi lagu berjalan), belum
+    bisa di-drag untuk seek langsung dari widget home screen, drag-to-seek asli di
+    App Widget klasik baru didukung penuh sejak Android 12 lewat plumbing "interactive
+    widget" khusus (RemoteViews.RemoteResponse dkk.), di luar scope patch kecil ini.
+    Ketuk widget (area judul/artis) tetap membuka app kalau butuh seek presisi.
+-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@android:id/background">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/widget_text_muted" />
+            <corners android:radius="2dp" />
+        </shape>
+    </item>
+    <item android:id="@android:id/progress">
+        <clip>
+            <shape android:shape="rectangle">
+                <solid android:color="@color/widget_gold" />
+                <corners android:radius="2dp" />
+            </shape>
+        </clip>
+    </item>
+</layer-list>
