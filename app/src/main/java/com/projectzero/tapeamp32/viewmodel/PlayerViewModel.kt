@@ -645,11 +645,23 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         //    (install baru / cache pernah dihapus), scan tetap tampilkan progress
         //    seperti biasa karena layar memang masih kosong.
         viewModelScope.launch {
-            val cachedJson = runCatching { settingsRepository.libraryCacheJson.first() }.getOrDefault("")
-            val cachedSongs = if (cachedJson.isBlank()) {
-                emptyList()
-            } else {
-                runCatching { musicRepository.deserializeSongs(cachedJson) }.getOrDefault(emptyList())
+            // FIX (bug "app selalu lambat/macet sebentar tiap dibuka"): sebelumnya
+            // deserializeSongs() -- yang loop parsing JSON manual, bisa berat kalau
+            // library isinya ratusan/ribuan lagu -- dipanggil LANGSUNG di sini, yang
+            // artinya jalan di Main dispatcher (default viewModelScope.launch), BUKAN
+            // di background. Padahal niat awal cache ini justru biar app buka INSTAN;
+            // kalau parsing-nya sendiri nge-block Main thread, hasilnya sama saja
+            // kerasa macet, cuma pindah lokasi macetnya. Sekarang dibungkus
+            // withContext(Dispatchers.IO) supaya parsing JSON (dan baca DataStore-nya)
+            // jalan di background thread, Main thread cuma nunggu hasilnya lalu update
+            // UI sekali jadi begitu selesai -- tidak ada frame nge-freeze lagi.
+            val cachedSongs = withContext(Dispatchers.IO) {
+                val cachedJson = runCatching { settingsRepository.libraryCacheJson.first() }.getOrDefault("")
+                if (cachedJson.isBlank()) {
+                    emptyList()
+                } else {
+                    runCatching { musicRepository.deserializeSongs(cachedJson) }.getOrDefault(emptyList())
+                }
             }
             if (cachedSongs.isNotEmpty()) {
                 // updateCache=false: ini cuma memuat ulang apa yang SUDAH tersimpan,
