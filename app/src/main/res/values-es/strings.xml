@@ -67,6 +67,11 @@
     <string name="settings_sys_language_desc">Idioma de la aplicación</string>
     <string name="settings_sys_about_title">Acerca de</string>
     <string name="settings_sys_about_desc">Versión, registro de cambios</string>
+
+    <!-- BARU (fitur "Kirim Feedback") -->
+    <string name="settings_sys_feedback_title">Enviar comentarios</string>
+    <string name="settings_sys_feedback_desc">¿Encontraste un error o tienes una sugerencia? Envíalo directamente con la información de tu dispositivo adjunta, para que se pueda revisar más rápido.</string>
+    <string name="settings_action_send_feedback">Enviar comentarios por correo</string>
     <string name="settings_back">Atrás</string>
 
     <!-- System > Playback & Screen -->
@@ -384,4 +389,11 @@
     <string name="streaming_edit_dialog_url_label">URL del stream</string>
     <string name="streaming_edit_save">GUARDAR</string>
     <string name="streaming_edit_cancel">CANCELAR</string>
+
+    <!-- BARU (parity fix: headroom slider + notifikasi shuffle/close) -->
+    <string name="eq_headroom_safety_label">MÁX. VOLUMEN ↔ HEADROOM SEGURO</string>
+    <string name="eq_headroom_safety_desc">Más bajo = más volumen en general, pero el limitador actúa más seguido en presets de EQ con realces grandes/superpuestos. Más alto = headroom más seguro, pero más silencioso en esos mismos presets.</string>
+    <string name="notif_shuffle_on">Aleatorio activado</string>
+    <string name="notif_shuffle_off">Aleatorio desactivado</string>
+    <string name="notif_close">Cerrar</string>
 </resources>

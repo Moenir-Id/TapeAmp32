@@ -67,6 +67,11 @@
     <string name="settings_sys_language_desc">应用显示语言</string>
     <string name="settings_sys_about_title">关于</string>
     <string name="settings_sys_about_desc">版本、更新日志</string>
+
+    <!-- BARU (fitur "Kirim Feedback") -->
+    <string name="settings_sys_feedback_title">发送反馈</string>
+    <string name="settings_sys_feedback_desc">发现了错误或有建议？直接发送并附上设备信息，以便更快地进行排查。</string>
+    <string name="settings_action_send_feedback">通过电子邮件发送反馈</string>
     <string name="settings_back">返回</string>
 
     <!-- System > Playback & Screen -->
@@ -384,4 +389,11 @@
     <string name="streaming_edit_dialog_url_label">流媒体网址</string>
     <string name="streaming_edit_save">保存</string>
     <string name="streaming_edit_cancel">取消</string>
+
+    <!-- BARU (parity fix: headroom slider + notifikasi shuffle/close) -->
+    <string name="eq_headroom_safety_label">最大响度 ↔ 安全余量</string>
+    <string name="eq_headroom_safety_desc">数值越低整体音量越大，但在增益较大/重叠的均衡器预设下限制器会更频繁地介入。数值越高余量越安全，但相同预设下的音量会更小。</string>
+    <string name="notif_shuffle_on">随机播放已开启</string>
+    <string name="notif_shuffle_off">随机播放已关闭</string>
+    <string name="notif_close">关闭</string>
 </resources>

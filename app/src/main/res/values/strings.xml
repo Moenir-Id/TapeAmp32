@@ -67,6 +67,11 @@
     <string name="settings_sys_language_desc">App display language</string>
     <string name="settings_sys_about_title">About</string>
     <string name="settings_sys_about_desc">Version, changelog</string>
+
+    <!-- BARU (fitur "Kirim Feedback") -->
+    <string name="settings_sys_feedback_title">Send Feedback</string>
+    <string name="settings_sys_feedback_desc">Found a bug or have a suggestion? Send it directly with your device info attached, so it can be looked into faster.</string>
+    <string name="settings_action_send_feedback">Send Feedback via Email</string>
     <string name="settings_back">Back</string>
 
     <!-- System > Playback & Screen -->

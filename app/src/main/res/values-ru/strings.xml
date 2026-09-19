@@ -67,6 +67,11 @@
     <string name="settings_sys_language_desc">Язык интерфейса приложения</string>
     <string name="settings_sys_about_title">О приложении</string>
     <string name="settings_sys_about_desc">Версия, журнал изменений</string>
+
+    <!-- BARU (fitur "Kirim Feedback") -->
+    <string name="settings_sys_feedback_title">Отправить отзыв</string>
+    <string name="settings_sys_feedback_desc">Нашли ошибку или есть предложение? Отправьте его напрямую вместе с информацией об устройстве, чтобы проблему можно было изучить быстрее.</string>
+    <string name="settings_action_send_feedback">Отправить отзыв по эл. почте</string>
     <string name="settings_back">Назад</string>
 
     <!-- System > Playback & Screen -->
@@ -384,4 +389,11 @@
     <string name="streaming_edit_dialog_url_label">URL потока</string>
     <string name="streaming_edit_save">СОХРАНИТЬ</string>
     <string name="streaming_edit_cancel">ОТМЕНА</string>
+
+    <!-- BARU (parity fix: headroom slider + notifikasi shuffle/close) -->
+    <string name="eq_headroom_safety_label">МАКС. ГРОМКОСТЬ ↔ БЕЗОПАСНЫЙ ЗАПАС</string>
+    <string name="eq_headroom_safety_desc">Ниже = громче в целом, но лимитер срабатывает чаще на пресетах EQ с большими/перекрывающимися подъёмами. Выше = более безопасный запас громкости, но тише на тех же пресетах.</string>
+    <string name="notif_shuffle_on">Перемешивание вкл.</string>
+    <string name="notif_shuffle_off">Перемешивание выкл.</string>
+    <string name="notif_close">Закрыть</string>
 </resources>

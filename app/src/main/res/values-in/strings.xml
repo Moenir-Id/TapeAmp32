@@ -67,6 +67,11 @@
     <string name="settings_sys_language_desc">Bahasa tampilan aplikasi</string>
     <string name="settings_sys_about_title">Tentang</string>
     <string name="settings_sys_about_desc">Versi, riwayat perubahan</string>
+
+    <!-- BARU (fitur "Kirim Feedback") -->
+    <string name="settings_sys_feedback_title">Kirim Feedback</string>
+    <string name="settings_sys_feedback_desc">Nemu bug atau punya saran? Kirim langsung dengan info device kamu ikut terlampir, biar bisa lebih cepat ditelusuri.</string>
+    <string name="settings_action_send_feedback">Kirim Feedback lewat Email</string>
     <string name="settings_back">Kembali</string>
 
     <!-- System > Pemutaran & Layar -->
@@ -383,4 +388,11 @@
     <string name="streaming_edit_dialog_url_label">URL stream</string>
     <string name="streaming_edit_save">SIMPAN</string>
     <string name="streaming_edit_cancel">BATAL</string>
+
+    <!-- BARU (parity fix: headroom slider + notifikasi shuffle/close) -->
+    <string name="eq_headroom_safety_label">MAX LOUDNESS ↔ SAFE HEADROOM</string>
+    <string name="eq_headroom_safety_desc">Lebih rendah = lebih kencang secara keseluruhan, tapi limiter lebih sering kerja di preset EQ dengan boost besar/tumpang tindih. Lebih tinggi = headroom lebih aman, tapi lebih pelan untuk preset yang sama.</string>
+    <string name="notif_shuffle_on">Shuffle aktif</string>
+    <string name="notif_shuffle_off">Shuffle nonaktif</string>
+    <string name="notif_close">Tutup</string>
 </resources>

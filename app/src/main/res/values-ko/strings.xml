@@ -67,6 +67,11 @@
     <string name="settings_sys_language_desc">앱 표시 언어</string>
     <string name="settings_sys_about_title">정보</string>
     <string name="settings_sys_about_desc">버전, 변경 내역</string>
+
+    <!-- BARU (fitur "Kirim Feedback") -->
+    <string name="settings_sys_feedback_title">피드백 보내기</string>
+    <string name="settings_sys_feedback_desc">버그를 발견했거나 제안이 있으신가요? 기기 정보를 첨부하여 직접 보내주시면 더 빠르게 확인할 수 있습니다.</string>
+    <string name="settings_action_send_feedback">이메일로 피드백 보내기</string>
     <string name="settings_back">뒤로</string>
 
     <!-- System > Playback & Screen -->
@@ -384,4 +389,11 @@
     <string name="streaming_edit_dialog_url_label">스트림 URL</string>
     <string name="streaming_edit_save">저장</string>
     <string name="streaming_edit_cancel">취소</string>
+
+    <!-- BARU (parity fix: headroom slider + notifikasi shuffle/close) -->
+    <string name="eq_headroom_safety_label">최대 음량 ↔ 안전 헤드룸</string>
+    <string name="eq_headroom_safety_desc">낮을수록 전체적으로 더 크게 들리지만, 부스트가 크거나 겹치는 EQ 프리셋에서는 리미터가 더 자주 작동합니다. 높을수록 헤드룸은 더 안전해지지만 같은 프리셋에서 소리는 더 작아집니다.</string>
+    <string name="notif_shuffle_on">셔플 켜짐</string>
+    <string name="notif_shuffle_off">셔플 꺼짐</string>
+    <string name="notif_close">닫기</string>
 </resources>

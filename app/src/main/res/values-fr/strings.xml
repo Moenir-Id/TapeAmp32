@@ -67,6 +67,11 @@
     <string name="settings_sys_language_desc">Langue d\'affichage de l\'application</string>
     <string name="settings_sys_about_title">À propos</string>
     <string name="settings_sys_about_desc">Version, journal des modifications</string>
+
+    <!-- BARU (fitur "Kirim Feedback") -->
+    <string name="settings_sys_feedback_title">Envoyer un avis</string>
+    <string name="settings_sys_feedback_desc">Vous avez trouvé un bug ou avez une suggestion ? Envoyez-le directement avec les informations de votre appareil jointes, pour un traitement plus rapide.</string>
+    <string name="settings_action_send_feedback">Envoyer un avis par e-mail</string>
     <string name="settings_back">Retour</string>
 
     <!-- System > Playback & Screen -->
@@ -384,4 +389,11 @@
     <string name="streaming_edit_dialog_url_label">URL du flux</string>
     <string name="streaming_edit_save">ENREGISTRER</string>
     <string name="streaming_edit_cancel">ANNULER</string>
+
+    <!-- BARU (parity fix: headroom slider + notifikasi shuffle/close) -->
+    <string name="eq_headroom_safety_label">VOLUME MAX ↔ MARGE DE SÉCURITÉ</string>
+    <string name="eq_headroom_safety_desc">Plus bas = plus fort dans l\'ensemble, mais le limiteur intervient plus souvent sur les préréglages EQ avec de fortes hausses qui se chevauchent. Plus haut = marge plus sûre, mais plus silencieux sur ces mêmes préréglages.</string>
+    <string name="notif_shuffle_on">Lecture aléatoire activée</string>
+    <string name="notif_shuffle_off">Lecture aléatoire désactivée</string>
+    <string name="notif_close">Fermer</string>
 </resources>

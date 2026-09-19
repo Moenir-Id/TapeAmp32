@@ -1685,8 +1685,40 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         return true
     }
 
+    // FIX (bug "Next/Prev macet di lagu yang sama, nunggu scan library"):
+    // _queue bisa jadi masih placeholder isi 1 lagu (dari restore lagu
+    // terakhir yang menang race duluan sebelum cache library selesai
+    // dimuat, lihat catatan panjang di init block soal race ini) padahal
+    // _library.value SEBENARNYA sudah berisi seluruh koleksi (cache/scan
+    // sudah kelar duluan sebelum tombol Next/Prev ditekan -- cuma _queue
+    // belum sempat di-refresh dari situ). Tanpa guard ini, next()/previous()
+    // menghitung modulo 1 (satu-satunya isi antrian), jadi SELALU balik ke
+    // lagu yang sama, terasa seperti "macet" sampai pengguna kebetulan buka
+    // Library dan Shuffle All (yang membangun _queue baru dari _library).
+    // Dipanggil di awal next()/previous() supaya queue "disegarkan" dari
+    // _library duluan sebelum indeksnya dihitung, kalau memang masih
+    // placeholder.
+    private fun ensureQueueUsesFullLibraryIfStillPlaceholder() {
+        val currentQueue = _queue.value
+        val library = _library.value
+        if (currentQueue.size <= 1 && library.size > 1) {
+            val current = playerManager.currentSong.value ?: currentQueue.firstOrNull()
+            val newQueue = if (_shuffleOn.value) {
+                val rest = library.filter { current == null || it.id != current.id }
+                val shuffledRest = ShuffleQueue.shuffled(rest)
+                if (current != null) listOf(current) + shuffledRest else shuffledRest
+            } else {
+                library
+            }
+            _queue.value = newQueue
+            queueIndex = current?.let { c -> newQueue.indexOfFirst { it.id == c.id } }?.takeIf { it >= 0 } ?: 0
+        }
+    }
+
     fun next() {
         if (tryAdvanceStreamStation(step = 1)) return
+
+        ensureQueueUsesFullLibraryIfStillPlaceholder()
 
         val q = _queue.value
         if (q.isEmpty()) return
@@ -1703,6 +1735,8 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
 
     fun previous() {
         if (tryAdvanceStreamStation(step = -1)) return
+
+        ensureQueueUsesFullLibraryIfStillPlaceholder()
 
         val q = _queue.value
         if (q.isEmpty()) return

@@ -1,6 +1,7 @@
 package com.projectzero.tapeamp32.ui.screens
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import com.projectzero.tapeamp32.BuildConfig
@@ -110,6 +111,19 @@ internal enum class SettingsSystemSubPage(
         R.string.settings_sys_about_title,
         R.string.settings_sys_about_desc,
         Icons.Filled.Info
+    ),
+
+    // BARU (fitur "Kirim Feedback"): jalur resmi buat user laporan bug/saran
+    // dari device asli mereka -- sebelumnya app ini sama sekali tidak punya
+    // cara buat user ngasih tau masalah selain lewat review Play Store
+    // (yang publik & jarang lengkap detail teknisnya, mis. model HP/versi
+    // Android). Tombol ini buka email client dengan subjek & body sudah
+    // otomatis keisi info device + versi app, supaya laporan yang masuk
+    // langsung bisa ditelusuri tanpa perlu tanya-jawab bolak-balik dulu.
+    FEEDBACK(
+        R.string.settings_sys_feedback_title,
+        R.string.settings_sys_feedback_desc,
+        Icons.Filled.Feedback
     )
 }
 
@@ -821,6 +835,47 @@ fun SettingsScreen(
                                 label = stringResource(R.string.settings_action_view_changelog),
                                 onClick = {
                                     showChangelogDialog = true
+                                }
+                            )
+                        }
+
+                        SettingsSystemSubPage.FEEDBACK -> {
+
+                            val context = LocalContext.current
+
+                            // BARU (fitur "Kirim Feedback"): body email sudah diisi
+                            // otomatis dengan info device + versi app -- ini yang
+                            // paling sering diminta ulang manual kalau tidak
+                            // disertakan dari awal (developer pasti nanya "pakai HP
+                            // apa?", "versi Android berapa?", "versi app berapa?"
+                            // begitu ada laporan bug masuk).
+                            val deviceInfo = "Device: ${Build.MANUFACTURER} ${Build.MODEL}\n" +
+                                "Android: ${Build.VERSION.RELEASE} (SDK ${Build.VERSION.SDK_INT})\n" +
+                                "TapeAmp32 versi: ${BuildConfig.VERSION_NAME}\n\n" +
+                                "--- Tulis laporan/saran kamu di bawah ini ---\n\n"
+
+                            Text(
+                                text = stringResource(R.string.settings_sys_feedback_desc),
+                                color = TextMuted,
+                                fontFamily = MonoFont,
+                                fontSize = 9.sp,
+                                lineHeight = 13.sp
+                            )
+
+                            Spacer(modifier = Modifier.height(9.dp))
+
+                            SettingsActionRow(
+                                label = stringResource(R.string.settings_action_send_feedback),
+                                onClick = {
+                                    val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
+                                        data = Uri.parse("mailto:")
+                                        putExtra(Intent.EXTRA_EMAIL, arrayOf("munirsyaiful@gmail.com"))
+                                        putExtra(Intent.EXTRA_SUBJECT, "TapeAmp32 Feedback - v${BuildConfig.VERSION_NAME}")
+                                        putExtra(Intent.EXTRA_TEXT, deviceInfo)
+                                    }
+                                    runCatching {
+                                        context.startActivity(emailIntent)
+                                    }
                                 }
                             )
                         }

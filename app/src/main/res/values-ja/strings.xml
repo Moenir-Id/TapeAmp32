@@ -67,6 +67,11 @@
     <string name="settings_sys_language_desc">アプリの表示言語</string>
     <string name="settings_sys_about_title">アプリについて</string>
     <string name="settings_sys_about_desc">バージョン、変更履歴</string>
+
+    <!-- BARU (fitur "Kirim Feedback") -->
+    <string name="settings_sys_feedback_title">フィードバックを送信</string>
+    <string name="settings_sys_feedback_desc">バグを見つけましたか、またはご提案がありますか？デバイス情報を添えて直接送信すると、より早く調査できます。</string>
+    <string name="settings_action_send_feedback">メールでフィードバックを送信</string>
     <string name="settings_back">戻る</string>
 
     <!-- System > Playback & Screen -->
@@ -384,4 +389,11 @@
     <string name="streaming_edit_dialog_url_label">ストリームURL</string>
     <string name="streaming_edit_save">保存</string>
     <string name="streaming_edit_cancel">キャンセル</string>
+
+    <!-- BARU (parity fix: headroom slider + notifikasi shuffle/close) -->
+    <string name="eq_headroom_safety_label">最大音量 ↔ 安全ヘッドルーム</string>
+    <string name="eq_headroom_safety_desc">低いほど全体的に音量が大きくなりますが、ブースト量が大きい/重なるEQプリセットではリミッターがより頻繁に働きます。高いほどヘッドルームは安全になりますが、同じプリセットでも音は小さくなります。</string>
+    <string name="notif_shuffle_on">シャッフル オン</string>
+    <string name="notif_shuffle_off">シャッフル オフ</string>
+    <string name="notif_close">閉じる</string>
 </resources>
