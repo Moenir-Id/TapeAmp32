@@ -392,7 +392,7 @@
 
     <!-- BARU (parity fix: headroom slider + notifikasi shuffle/close) -->
     <string name="eq_headroom_safety_label">VOLUME MAX ↔ MARGE DE SÉCURITÉ</string>
-    <string name="eq_headroom_safety_desc">Plus bas = plus fort dans l\'ensemble, mais le limiteur intervient plus souvent sur les préréglages EQ avec de fortes hausses qui se chevauchent. Plus haut = marge plus sûre, mais plus silencieux sur ces mêmes préréglages.</string>
+    <string name="eq_headroom_safety_desc">Plus bas = plus fort globalement, mais le limiteur intervient plus souvent sur les préréglages EQ avec de fortes hausses qui se chevauchent. Plus haut = marge plus sûre, mais plus silencieux sur ces mêmes préréglages.</string>
     <string name="notif_shuffle_on">Lecture aléatoire activée</string>
     <string name="notif_shuffle_off">Lecture aléatoire désactivée</string>
     <string name="notif_close">Fermer</string>
