@@ -26,6 +26,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -34,8 +35,10 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntSize
@@ -47,6 +50,7 @@ import com.projectzero.tapeamp32.ui.theme.*
 import kotlinx.coroutines.delay
 import kotlin.math.abs
 import kotlin.math.atan2
+import kotlin.math.cos
 import kotlin.math.min
 import kotlin.math.sin
 
@@ -120,7 +124,13 @@ fun CassetteDeck(
     // di tape window/roda, supaya tidak bentrok dengan gesture rotary seeking di atas)
     // untuk pindah Side A (Library) <-> Side B (Stream). Pemanggil (PlayerScreen) yang
     // menentukan efek sampingnya lewat PlayerViewModel.toggleCassetteSide().
-    onDoubleTap: () -> Unit = {}
+    onDoubleTap: () -> Unit = {},
+    // BARU (fitur "share card"): long-press di bodi kaset untuk share kartu
+    // "now playing". Sengaja LONG-PRESS, bukan tombol kecil terpisah -- supaya
+    // tidak nambah target sentuh baru di dekat kontrol lain (volume slider,
+    // transport bar) yang gampang ke-misclick. Butuh tahan sengaja, jadi kecil
+    // kemungkinan kepencet gak sengaja pas dengerin biasa.
+    onLongPress: () -> Unit = {}
 ) {
 
     /*
@@ -212,11 +222,39 @@ fun CassetteDeck(
     // double tap di bawah tidak perlu di-restart tiap recomposition, tapi tetap memanggil
     // versi terbaru dari lambda onDoubleTap yang dioper PlayerScreen.
     val currentOnDoubleTap by rememberUpdatedState(onDoubleTap)
+    val currentOnLongPress by rememberUpdatedState(onLongPress)
+
+    // BARU (fitur "share card"): haptic buat konfirmasi long-press di bodi kaset.
+    val haptic = LocalHapticFeedback.current
+
+    /*
+     * ============================================================
+     * BARU (realism pass): seed acak yang KONSISTEN per kaset (bukan
+     * per-frame/per-recompose) buat pola "wear" (goresan, kusam) --
+     * dipilih dari serial + judul supaya tiap kaset/skin kelihatan
+     * beda coraknya, tapi tetap sama tiap kali di-render ulang
+     * (tidak "berkedip" berubah-ubah pas recomposition biasa).
+     * ============================================================
+     */
+    val wearSeed = remember(serial, skin) {
+        (serial.hashCode() xor skin.hashCode())
+    }
+    val wearRandom = remember(wearSeed) { kotlin.random.Random(wearSeed) }
 
     Box(
         modifier = modifier
             .fillMaxWidth()
             .height(235.dp)
+            // BARU (realism pass): drop shadow di bawah bodi kaset supaya
+            // kelihatan "ngangkat" dari background, bukan nempel flat 2D.
+            // ambientColor/spotColor gelap pekat (bukan hitam solid biasa)
+            // biar bayangannya kerasa halus, bukan seperti bayangan ikon UI.
+            .shadow(
+                elevation = 12.dp,
+                shape = RoundedCornerShape(10.dp),
+                ambientColor = Color.Black.copy(alpha = 0.55f),
+                spotColor = Color.Black.copy(alpha = 0.65f)
+            )
             .clip(RoundedCornerShape(10.dp))
             .background(
                 Brush.verticalGradient(
@@ -238,7 +276,15 @@ fun CassetteDeck(
             // parent/child level ini tidak saling merebut gesture satu sama lain).
             .pointerInput(Unit) {
                 detectTapGestures(
-                    onDoubleTap = { currentOnDoubleTap() }
+                    onDoubleTap = { currentOnDoubleTap() },
+                    // BARU (fitur "share card"): haptic sengaja dipanggil di sini
+                    // (bukan cuma di PlayerScreen) supaya user dapat konfirmasi
+                    // fisik "aksi kepencet" walau kartu-nya dirender di background
+                    // tanpa ada perubahan visual instan di kaset itu sendiri.
+                    onLongPress = {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        currentOnLongPress()
+                    }
                 )
             }
             .padding(8.dp)
@@ -495,6 +541,25 @@ fun CassetteDeck(
                             )
                         }
                     }
+
+                    // BARU (realism pass): vignette label "menua" -- radial
+                    // gradient gelap+hangat di sudut label, meniru kertas label
+                    // kaset asli yang sedikit menguning/kusam di pinggirnya
+                    // seiring waktu. Alpha sengaja sangat rendah supaya teks
+                    // tetap gampang dibaca (bukan efek dekoratif dominan).
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                Brush.radialGradient(
+                                    colors = listOf(
+                                        Color.Transparent,
+                                        Color.Transparent,
+                                        Color(0xFF3A2A12).copy(alpha = 0.14f)
+                                    )
+                                )
+                            )
+                    )
                 }
 
                 /*
@@ -866,6 +931,41 @@ fun CassetteDeck(
 
                         /*
                          * ====================================================
+                         * BARU (realism pass): LUBANG CAPSTAN & GUIDE PIN
+                         * ----------------------------------------------------
+                         * Detail bodi kaset asli di bawah jendela pita: 2 lubang
+                         * besar (dudukan capstan/pinch roller deck asli) dekat
+                         * bawah, diapit 2 pin guide kecil dekat tengah bawah.
+                         * Cuma dekoratif (tidak interaktif), digambar di bawah
+                         * garis pita supaya tidak menumpuk visual reel.
+                         * ====================================================
+                         */
+
+                        val holeY = h * 0.90f
+
+                        listOf(w * 0.26f, w * 0.74f).forEach { hx ->
+                            drawCircle(
+                                color = Color(0xFF030405),
+                                radius = h * 0.075f,
+                                center = Offset(hx, holeY)
+                            )
+                            drawCircle(
+                                color = Color.White.copy(alpha = 0.06f),
+                                radius = h * 0.075f,
+                                center = Offset(hx - h * 0.015f, holeY - h * 0.015f)
+                            )
+                        }
+
+                        listOf(w * 0.42f, w * 0.58f).forEach { hx ->
+                            drawCircle(
+                                color = Color(0xFF030405),
+                                radius = h * 0.035f,
+                                center = Offset(hx, holeY)
+                            )
+                        }
+
+                        /*
+                         * ====================================================
                          * BARU (v1.3) -- GLITCH EFFECT SAAT RODA DIPUTAR MANUAL
                          * ----------------------------------------------------
                          * Efek "distorsi pita rusak" ala kaset asli yang diputar
@@ -946,6 +1046,154 @@ fun CassetteDeck(
                         }
                     }
                 }
+            }
+        }
+
+        /*
+         * ============================================================
+         * BARU (realism pass): OVERLAY REALISME
+         * ------------------------------------------------------------
+         * Digambar SEBAGAI SAUDARA TERAKHIR dari "CASSETTE INNER FRAME"
+         * (bukan di dalamnya), supaya otomatis jadi lapisan PALING ATAS
+         * di dalam Box shell ini (urutan child Box = urutan z-index).
+         * Canvas ini TIDAK punya pointerInput sendiri, jadi tidak
+         * mengganggu gesture double-tap/long-press yang sudah terpasang
+         * di Box shell terluar.
+         *
+         * Isinya:
+         *  - 4 sekrup Phillips di tiap sudut shell (detail fisik kaset asli)
+         *  - sapuan highlight diagonal (glossy plastic sweep)
+         *  - rim light tipis di tepi atas & bayangan tipis di tepi bawah
+         *    (biar shell terasa punya kedalaman/lengkung, bukan flat)
+         *  - goresan halus acak (wear) -- seed konsisten per kaset (lihat
+         *    wearRandom di atas), jadi tidak berubah-ubah tiap recompose
+         * ============================================================
+         */
+
+        Canvas(
+            modifier = Modifier.fillMaxSize()
+        ) {
+
+            val w = size.width
+            val h = size.height
+
+            /*
+             * RIM LIGHT (tepi atas terang, tepi bawah gelap -- kesan
+             * shell sedikit cembung/melengkung kena cahaya dari atas)
+             */
+
+            drawRoundRect(
+                brush = Brush.verticalGradient(
+                    listOf(
+                        Color.White.copy(alpha = 0.10f),
+                        Color.Transparent,
+                        Color.Transparent,
+                        Color.Black.copy(alpha = 0.22f)
+                    )
+                ),
+                size = Size(w, h),
+                cornerRadius = CornerRadius(10.dp.toPx(), 10.dp.toPx())
+            )
+
+            /*
+             * GLOSSY DIAGONAL SWEEP (plastik mengkilap kena cahaya dari
+             * sudut -- pita miring dari kiri-atas ke kanan-bawah)
+             */
+
+            drawLine(
+                brush = Brush.linearGradient(
+                    colors = listOf(
+                        Color.Transparent,
+                        Color.White.copy(alpha = 0.09f),
+                        Color.Transparent
+                    ),
+                    start = Offset(w * 0.05f, 0f),
+                    end = Offset(w * 0.45f, h)
+                ),
+                start = Offset(w * 0.05f, 0f),
+                end = Offset(w * 0.55f, h),
+                strokeWidth = w * 0.30f
+            )
+
+            /*
+             * SEKRUP PHILLIPS DI 4 SUDUT
+             */
+
+            val screwRadius = 5.5.dp.toPx()
+            val screwInset = 12.dp.toPx()
+
+            val screwCenters = listOf(
+                Offset(screwInset, screwInset),
+                Offset(w - screwInset, screwInset),
+                Offset(screwInset, h - screwInset),
+                Offset(w - screwInset, h - screwInset)
+            )
+
+            screwCenters.forEach { c ->
+
+                // Cekungan dudukan sekrup (bayangan cincin gelap).
+                drawCircle(
+                    color = Color.Black.copy(alpha = 0.35f),
+                    radius = screwRadius * 1.35f,
+                    center = c
+                )
+
+                // Kepala sekrup metalik (gradient radial biar cembung).
+                drawCircle(
+                    brush = Brush.radialGradient(
+                        colors = listOf(
+                            Color(0xFFBFBFBF),
+                            Color(0xFF6E6E6E),
+                            Color(0xFF2A2A2A)
+                        ),
+                        center = Offset(
+                            c.x - screwRadius * 0.3f,
+                            c.y - screwRadius * 0.3f
+                        ),
+                        radius = screwRadius * 1.6f
+                    ),
+                    radius = screwRadius,
+                    center = c
+                )
+
+                // Alur (+) Phillips di kepala sekrup.
+                drawLine(
+                    color = Color.Black.copy(alpha = 0.75f),
+                    start = Offset(c.x - screwRadius * 0.6f, c.y),
+                    end = Offset(c.x + screwRadius * 0.6f, c.y),
+                    strokeWidth = 1.1.dp.toPx()
+                )
+                drawLine(
+                    color = Color.Black.copy(alpha = 0.75f),
+                    start = Offset(c.x, c.y - screwRadius * 0.6f),
+                    end = Offset(c.x, c.y + screwRadius * 0.6f),
+                    strokeWidth = 1.1.dp.toPx()
+                )
+            }
+
+            /*
+             * GORESAN HALUS (WEAR) -- jumlah & posisi tetap per kaset
+             * (wearRandom), garis sangat tipis & redup supaya terlihat
+             * "dipakai" tanpa bikin kotor/mengganggu keterbacaan label.
+             */
+
+            repeat(6) {
+                val x1 = wearRandom.nextFloat() * w
+                val y1 = wearRandom.nextFloat() * h
+                val angle = wearRandom.nextFloat() * 360f
+                val len = w * (0.08f + wearRandom.nextFloat() * 0.14f)
+                val rad = Math.toRadians(angle.toDouble())
+                val x2 = x1 + (cos(rad) * len).toFloat()
+                val y2 = y1 + (sin(rad) * len).toFloat()
+
+                drawLine(
+                    color = Color.White.copy(
+                        alpha = 0.03f + wearRandom.nextFloat() * 0.03f
+                    ),
+                    start = Offset(x1, y1),
+                    end = Offset(x2, y2),
+                    strokeWidth = 0.6.dp.toPx()
+                )
             }
         }
     }

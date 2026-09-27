@@ -21,6 +21,20 @@
         android:theme="@style/Theme.TapeAmp32"
         android:usesCleartextTraffic="true">
 
+        <!-- BARU (fitur "share card"): FileProvider buat share PNG kartu "now
+             playing" ke app lain lewat ACTION_SEND. Belum pernah ada provider
+             di app ini sebelumnya, share sebelumnya cuma ACTION_SENDTO
+             (mailto) di SettingsScreen, ga pernah bagi file. -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

@@ -10,6 +10,9 @@ android {
 
     defaultConfig {
         applicationId = "com.projectzero.tapeamp32"
+        // BARU: sempat diturunin ke minSdk 23 buat testing di HP MIUI 11 /
+        // Android 7.1, tapi HP testing-nya sudah di-update ke Android 9 --
+        // balik lagi ke minSdk 26 (Oreo) seperti semula.
         minSdk = 26
         targetSdk = 34
         // v1.9 (patch): REPLAY GAIN beneran. Dulu ada toggle "ReplayGain" di kategori

@@ -183,6 +183,7 @@
          ============================================================ -->
     <string name="transport_power">POWER</string>
     <string name="transport_screen">SCREEN</string>
+    <string name="share_card_action">Now-Playing-Karte teilen</string>
     <string name="transport_volume">VOLUME</string>
     <string name="transport_rew">REW</string>
     <string name="transport_play">PLAY</string>

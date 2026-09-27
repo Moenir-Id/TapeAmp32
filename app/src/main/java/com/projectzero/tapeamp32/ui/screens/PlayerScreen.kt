@@ -11,6 +11,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -27,6 +28,7 @@ import com.projectzero.tapeamp32.ui.components.VfdStatusPanel
 import com.projectzero.tapeamp32.ui.components.VuMeter
 import com.projectzero.tapeamp32.ui.components.WaveformSeekBar
 import com.projectzero.tapeamp32.ui.theme.*
+import com.projectzero.tapeamp32.util.ShareCardRenderer
 import com.projectzero.tapeamp32.viewmodel.PlayerViewModel
 import kotlin.math.max
 
@@ -42,7 +44,11 @@ fun PlayerScreen(
     onFullScreenToggle: () -> Unit = {}
 ) {
 
+    val context = LocalContext.current
     val song by vm.currentSong.collectAsStateWithLifecycle()
+    // BARU (fitur "share card"): nama preset EQ yang lagi aktif, dipakai
+    // sebagai baris tambahan di kartu share (lihat ShareCardRenderer).
+    val activePreset by vm.activePreset.collectAsStateWithLifecycle()
     // BARU (patch "streaming label"): nama stasiun/URL yang sedang di-stream, dipakai
     // sebagai fallback title/artist kaset selagi `song` null KARENA sedang streaming
     // (bukan karena benar-benar belum ada apa pun yang diputar).
@@ -281,6 +287,22 @@ fun PlayerScreen(
                                     vm.seekTo(
                                         (newFraction * safeDuration).toLong()
                                     )
+                                },
+
+                                // BARU (fitur "share card"): long-press bodi kaset untuk
+                                // share kartu "now playing". Dipindah dari tombol kecil di
+                                // side panel karena itu terlalu dekat dengan volume slider
+                                // (rawan salah pencet) -- long-press di sini juga otomatis
+                                // no-op kalau belum ada lagu lokal aktif (song == null,
+                                // mis. lagi streaming radio).
+                                onLongPress = {
+                                    song?.let { currentSong ->
+                                        ShareCardRenderer.renderAndShare(
+                                            context = context,
+                                            song = currentSong,
+                                            activePresetName = activePreset.name
+                                        )
+                                    }
                                 },
 
                                 // BARU: efek suara FF/RW ala kaset asli selama roda diputar
