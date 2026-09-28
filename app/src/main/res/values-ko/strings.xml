@@ -172,8 +172,7 @@
     <string name="player_no_song_banner">로드된 곡 없음  •  라이브러리를 열거나 음악을 가져오세요</string>
     <string name="player_streaming_label">스트리밍</string>
     <string name="player_error_prefix">오류  •  %1$s</string>
-    <string name="player_track_format_info">%1$s • 24-BIT / 96kHz</string>
-    <string name="player_badge_hires">HI-RES</string>
+    <string name="player_track_format_info">%1$s • %2$s</string>
     <string name="player_vfd_sleep_off">끄기</string>
     <string name="player_vfd_sleep_end_of_track">트랙 종료 시</string>
 

@@ -13,7 +13,14 @@ data class Song(
     val uri: Uri,
     val path: String = "",
     val format: String = "FLAC",
-    val bitDepthOrRate: String = "24-BIT / 96kHz"
+    // BARU (patch "rescan folder instan"): timestamp modifikasi file terakhir
+    // (epoch millis, dari DocumentsContract.Document.COLUMN_LAST_MODIFIED),
+    // dipakai MusicRepository.scanSelectedFolder() buat nge-skip
+    // MediaMetadataRetriever kalau file belum berubah sejak scan terakhir --
+    // lihat komentar panjang di MusicRepository.kt. Default 0L supaya semua
+    // konstruksi Song(...) yang sudah ada (dari sebelum field ini ditambah)
+    // tetap kompatibel apa adanya tanpa perlu diubah satu-satu.
+    val lastModified: Long = 0L
 )
 
 data class RadioStation(

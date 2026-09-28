@@ -172,8 +172,7 @@
     <string name="player_no_song_banner">ПЕСНЯ НЕ ЗАГРУЖЕНА  •  ОТКРОЙТЕ БИБЛИОТЕКУ ИЛИ ИМПОРТИРУЙТЕ МУЗЫКУ</string>
     <string name="player_streaming_label">ТРАНСЛЯЦИЯ</string>
     <string name="player_error_prefix">ОШИБКА  •  %1$s</string>
-    <string name="player_track_format_info">%1$s • 24-BIT / 96kHz</string>
-    <string name="player_badge_hires">HI-RES</string>
+    <string name="player_track_format_info">%1$s • %2$s</string>
     <string name="player_vfd_sleep_off">ВЫКЛ.</string>
     <string name="player_vfd_sleep_end_of_track">КОНЕЦ ТРЕКА</string>
 

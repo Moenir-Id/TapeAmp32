@@ -208,6 +208,31 @@ class MainActivity : ComponentActivity() {
         // begitu izin diberikan dan playback berjalan.
     }
 
+    // FIX (bug "fullscreen tidak berfungsi / status bar masih muncul di beberapa
+    // device"): immersive mode sebelumnya cuma diterapkan SEKALI di onCreate().
+    // Banyak OEM (MIUI, One UI, dll) menampilkan lagi status bar setiap window
+    // kehilangan fokus -- dialog izin audio / battery optimization yang muncul
+    // saat app dibuka, tarik notification shade, balik dari recents, keyboard --
+    // dan TIDAK menyembunyikannya lagi otomatis. Sekarang diterapkan ulang tiap
+    // window dapat fokus lagi (dan di onResume), mengikuti status toggle SCREEN.
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) {
+            FullScreenController.applyImmersiveMode(
+                window = window,
+                enable = FullScreenController.isFullScreenEnabled(this)
+            )
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        FullScreenController.applyImmersiveMode(
+            window = window,
+            enable = FullScreenController.isFullScreenEnabled(this)
+        )
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         // BARU (v1.2) - FIX layar putih polos saat app dibuka: HARUS dipanggil
         // sebelum super.onCreate(), sesuai kontrak androidx.core.splashscreen.

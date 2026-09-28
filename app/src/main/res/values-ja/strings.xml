@@ -172,8 +172,7 @@
     <string name="player_no_song_banner">曲が読み込まれていません  •  ライブラリを開くか音楽をインポートしてください</string>
     <string name="player_streaming_label">ストリーミング</string>
     <string name="player_error_prefix">エラー  •  %1$s</string>
-    <string name="player_track_format_info">%1$s • 24-BIT / 96kHz</string>
-    <string name="player_badge_hires">ハイレゾ</string>
+    <string name="player_track_format_info">%1$s • %2$s</string>
     <string name="player_vfd_sleep_off">オフ</string>
     <string name="player_vfd_sleep_end_of_track">曲の終わり</string>
 

@@ -172,8 +172,7 @@
     <string name="player_no_song_banner">NINGUNA CANCIÓN CARGADA  •  ABRE LA BIBLIOTECA O IMPORTA MÚSICA</string>
     <string name="player_streaming_label">TRANSMISIÓN</string>
     <string name="player_error_prefix">ERROR  •  %1$s</string>
-    <string name="player_track_format_info">%1$s • 24-BIT / 96kHz</string>
-    <string name="player_badge_hires">HI-RES</string>
+    <string name="player_track_format_info">%1$s • %2$s</string>
     <string name="player_vfd_sleep_off">DESACTIVADO</string>
     <string name="player_vfd_sleep_end_of_track">FIN DE PISTA</string>
 

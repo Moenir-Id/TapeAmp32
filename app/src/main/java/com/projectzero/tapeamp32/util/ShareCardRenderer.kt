@@ -48,7 +48,17 @@ object ShareCardRenderer {
 
     fun render(
         song: Song,
-        activePresetName: String?
+        activePresetName: String?,
+        // BARU (fix "bitDepthOrRate hardcoded"): sebelumnya kartu share selalu
+        // nulis "24-BIT / 96kHz" buat SEMUA lagu (dari Song.bitDepthOrRate yang
+        // emang gak pernah diisi data asli di mana pun). Sekarang dipakai angka
+        // REAL yang sama persis kayak yang ditampilkan live di VFD Status Panel
+        // (PlayerManager.sampleRate/bitDepth/isHiRes, diambil dari
+        // AudioTrackConfig ExoPlayer yang beneran dikirim ke hardware) --
+        // pemanggil (PlayerScreen.kt) yang nyuplai nilai-nilai ini.
+        sampleRateHz: Int,
+        bitDepth: Int,
+        isHiRes: Boolean
     ): Bitmap {
         val bmp = Bitmap.createBitmap(CARD_WIDTH, CARD_HEIGHT, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bmp)
@@ -262,15 +272,21 @@ object ShareCardRenderer {
         canvas.drawText(title, 90f, 900f, titlePaint)
         canvas.drawText(artist, 90f, 955f, artistPaint)
 
-        // Format / preset chip line.
+        // Format / preset chip line -- pakai sample rate/bit depth REAL (lihat
+        // catatan di parameter render(), bukan Song.bitDepthOrRate yang statis).
         val metaPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = 0xFF8A7550.toInt()
             textSize = 32f
         }
         val metaLine = buildString {
             append(song.format)
-            append(" \u00B7 ")
-            append(song.bitDepthOrRate)
+            // sampleRateHz <= 0 berarti info belum sempat diketahui (mis. share
+            // dipicu sebelum AudioTrack sempat init) -- jangan tampilkan angka
+            // karangan, cukup lewati bagian ini.
+            if (sampleRateHz > 0) {
+                append(" \u00B7 ")
+                append(com.projectzero.tapeamp32.ui.screens.formatAudioSpec(sampleRateHz, bitDepth, isHiRes))
+            }
             if (!activePresetName.isNullOrBlank()) {
                 append(" \u00B7 EQ: ")
                 append(activePresetName)
@@ -383,8 +399,15 @@ object ShareCardRenderer {
      * Render, tulis ke cache dir, dan langsung buka share sheet.
      * Panggil dari Composable lewat LocalContext.current.
      */
-    fun renderAndShare(context: Context, song: Song, activePresetName: String?) {
-        val bmp = render(song, activePresetName)
+    fun renderAndShare(
+        context: Context,
+        song: Song,
+        activePresetName: String?,
+        sampleRateHz: Int,
+        bitDepth: Int,
+        isHiRes: Boolean
+    ) {
+        val bmp = render(song, activePresetName, sampleRateHz, bitDepth, isHiRes)
 
         val cacheDir = File(context.cacheDir, "share_cards").apply { mkdirs() }
         val file = File(cacheDir, "tapeamp32_share_${System.currentTimeMillis()}.png")

@@ -174,8 +174,7 @@
          yang sedang diputar adalah radio/stream, bukan lagu dari library. -->
     <string name="player_streaming_label">STREAMING</string>
     <string name="player_error_prefix">ERROR  •  %1$s</string>
-    <string name="player_track_format_info">%1$s • 24-BIT / 96kHz</string>
-    <string name="player_badge_hires">HI-RES</string>
+    <string name="player_track_format_info">%1$s • %2$s</string>
     <string name="player_vfd_sleep_off">OFF</string>
     <string name="player_vfd_sleep_end_of_track">END OF TRACK</string>
 

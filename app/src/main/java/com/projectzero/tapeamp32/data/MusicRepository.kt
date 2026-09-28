@@ -103,13 +103,60 @@ class MusicRepository(private val context: Context) {
      * sekali"). Sekarang traversal folder (cepat, cuma listing nama file) dipisah dari
      * ekstraksi metadata, dan metadata diekstrak PARALEL dengan concurrency dibatasi
      * (maks 6 file bersamaan) supaya jauh lebih cepat tanpa membanjiri I/O storage.
+     *
+     * BARU (patch "rescan folder instan"): fix di atas masih nge-fetch metadata SEMUA
+     * file tiap kali folder di-scan ulang -- kalau folder isinya 2000 lagu dan cuma
+     * nambah 1 lagu baru, tetap 2000 file yang dibuka lewat MediaMetadataRetriever tiap
+     * buka app / refresh. Sekarang [oldCache] (hasil scan folder ini yang terakhir
+     * tersimpan, lihat pemanggilnya di PlayerViewModel) dipakai buat SKIP file yang
+     * belum berubah:
+     *   - Tiap file diidentifikasi lewat [AudioFileEntry.docId] (id dokumen SAF, stabil
+     *     selama file tidak dihapus/dipindah) + [AudioFileEntry.lastModified] (kapan
+     *     terakhir diubah, dari COLUMN_LAST_MODIFIED).
+     *   - Song.id sendiri SUDAH berupa hash dari docId ini (lihat baris fetch di bawah),
+     *     jadi itu juga yang dipakai sebagai key cache -- tidak perlu simpan docId
+     *     mentah terpisah di Song/JSON, karena hash-nya sendiri sudah unik per file per
+     *     folder (prinsip yang sama seperti dedup Song.id yang sudah dipakai di
+     *     PlayerViewModel.scanMultipleFolders()).
+     *   - Kalau id file ada di [oldCache] DAN lastModified-nya PERSIS SAMA -> Song lama
+     *     dipakai apa adanya, MediaMetadataRetriever di-skip total untuk file itu.
+     *   - Kalau tidak ada di cache (file baru) atau lastModified beda (file diubah) ->
+     *     baru masuk antrian buat di-fetch ulang lewat semaphore paralel seperti biasa.
+     * Hasilnya: nambah 1 lagu baru di folder isi 2000 lagu -> yang benar-benar dibuka
+     * lewat retriever cuma 1 file itu, bukan 2000-nya lagi.
      */
-    suspend fun scanSelectedFolder(folderUri: Uri): List<Song> = coroutineScope {
+    suspend fun scanSelectedFolder(
+        folderUri: Uri,
+        oldCache: List<Song> = emptyList()
+    ): List<Song> = coroutineScope {
         val fileEntries = mutableListOf<AudioFileEntry>()
         collectAudioFiles(folderUri, folderUri, fileEntries)
 
+        // Index cache lama by id supaya lookup per file O(1), bukan linear
+        // search ke seluruh oldCache tiap file (bisa berat kalau cache-nya
+        // sendiri ribuan entri).
+        val cacheMap = oldCache.associateBy { it.id }
+
+        val reused = mutableListOf<Song>()
+        val toFetch = mutableListOf<AudioFileEntry>()
+
+        fileEntries.forEach { entry ->
+            val id = entry.docId.hashCode().toLong()
+            val cached = cacheMap[id]
+            if (cached != null && cached.lastModified == entry.lastModified) {
+                // File belum berubah sejak scan terakhir -> pakai hasil lama,
+                // TIDAK menyentuh MediaMetadataRetriever sama sekali.
+                reused.add(cached)
+            } else {
+                // Belum pernah di-scan sebelumnya (file baru), atau lastModified
+                // berbeda (file sudah diubah sejak terakhir kali) -> perlu
+                // di-fetch ulang metadatanya.
+                toFetch.add(entry)
+            }
+        }
+
         val semaphore = Semaphore(6)
-        fileEntries.map { entry ->
+        val fetched = toFetch.map { entry ->
             async(Dispatchers.IO) {
                 semaphore.withPermit {
                     val metadata = fetchAudioMetadata(entry.fileUri, entry.fileName)
@@ -122,14 +169,26 @@ class MusicRepository(private val context: Context) {
                         durationMs = metadata.durationMs,
                         uri = entry.fileUri,
                         path = entry.fileUri.toString(),
-                        format = format
+                        format = format,
+                        lastModified = entry.lastModified
                     )
                 }
             }
         }.awaitAll()
+
+        reused + fetched
     }
 
-    private data class AudioFileEntry(val fileUri: Uri, val fileName: String, val docId: String)
+    private data class AudioFileEntry(
+        val fileUri: Uri,
+        val fileName: String,
+        val docId: String,
+        // BARU (patch "rescan folder instan"): epoch millis terakhir file ini
+        // diubah, dari DocumentsContract.Document.COLUMN_LAST_MODIFIED. Dipakai
+        // scanSelectedFolder() buat cek apakah file ini perlu di-fetch ulang
+        // metadatanya atau bisa pakai cache lama.
+        val lastModified: Long
+    )
 
     /** Listing rekursif folder SAF (cepat — tidak menyentuh metadata sama sekali). */
     private fun collectAudioFiles(parentTreeUri: Uri, currentDirUri: Uri, out: MutableList<AudioFileEntry>) {
@@ -141,18 +200,27 @@ class MusicRepository(private val context: Context) {
         val projection = arrayOf(
             DocumentsContract.Document.COLUMN_DOCUMENT_ID,
             OpenableColumns.DISPLAY_NAME,
-            DocumentsContract.Document.COLUMN_MIME_TYPE
+            DocumentsContract.Document.COLUMN_MIME_TYPE,
+            // BARU (patch "rescan folder instan"): dipakai buat deteksi
+            // file yang belum berubah sejak scan terakhir -- lihat
+            // scanSelectedFolder().
+            DocumentsContract.Document.COLUMN_LAST_MODIFIED
         )
 
         context.contentResolver.query(childrenUri, projection, null, null, null)?.use { cursor ->
             val idIndex = cursor.getColumnIndex(DocumentsContract.Document.COLUMN_DOCUMENT_ID)
             val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
             val mimeIndex = cursor.getColumnIndex(DocumentsContract.Document.COLUMN_MIME_TYPE)
+            val lastModifiedIndex = cursor.getColumnIndex(DocumentsContract.Document.COLUMN_LAST_MODIFIED)
 
             while (cursor.moveToNext()) {
                 val docId = cursor.getString(idIndex) ?: continue
                 val fileName = cursor.getString(nameIndex) ?: continue
                 val mimeType = cursor.getString(mimeIndex) ?: ""
+                // getLong mengembalikan 0 kalau kolomnya NULL/tidak dilaporkan
+                // provider (bukan exception) -- aman dipakai langsung tanpa
+                // isNull check tambahan.
+                val lastModified = if (lastModifiedIndex >= 0) cursor.getLong(lastModifiedIndex) else 0L
 
                 val fileUri = DocumentsContract.buildDocumentUriUsingTree(parentTreeUri, docId)
 
@@ -173,7 +241,7 @@ class MusicRepository(private val context: Context) {
                 val isAudioByExtension = KNOWN_AUDIO_EXTENSIONS.any { lowerName.endsWith(it) }
 
                 if (isAudioByMime || isAudioByExtension) {
-                    out.add(AudioFileEntry(fileUri, fileName, docId))
+                    out.add(AudioFileEntry(fileUri, fileName, docId, lastModified))
                 }
             }
         }
@@ -195,7 +263,13 @@ class MusicRepository(private val context: Context) {
             obj.put("uri", song.uri.toString())
             obj.put("path", song.path)
             obj.put("format", song.format)
-            obj.put("bitDepthOrRate", song.bitDepthOrRate)
+            // FIX (bug "badge/angka hi-res hardcoded"): field "bitDepthOrRate"
+            // dihapus -- dulu selalu "24-BIT / 96kHz" buat semua lagu, gak
+            // pernah diisi data asli. Info sample rate/bit depth yang REAL
+            // sekarang diambil langsung dari PlayerManager saat share (lihat
+            // ShareCardRenderer + PlayerScreen.kt), tidak lagi disimpan di
+            // Song/JSON sama sekali.
+            obj.put("lastModified", song.lastModified)
             arr.put(obj)
         }
         return arr.toString()
@@ -217,7 +291,13 @@ class MusicRepository(private val context: Context) {
                     uri = Uri.parse(obj.optString("uri")),
                     path = obj.optString("path", ""),
                     format = obj.optString("format", "FLAC"),
-                    bitDepthOrRate = obj.optString("bitDepthOrRate", "24-BIT / 96kHz")
+                    // optLong default 0L -> entri cache LAMA (dari sebelum patch ini)
+                    // yang belum punya field "lastModified" otomatis dianggap 0,
+                    // artinya pasti MISMATCH dengan lastModified asli file (yang
+                    // hampir pasti bukan 0) -> file itu di-fetch ulang SEKALI saja
+                    // di scan berikutnya (bukan dianggap error), lalu cache-nya
+                    // sudah lengkap seterusnya.
+                    lastModified = obj.optLong("lastModified", 0L)
                 )
             )
         }

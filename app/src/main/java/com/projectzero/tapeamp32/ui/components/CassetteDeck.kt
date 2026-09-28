@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -38,9 +39,11 @@ import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -343,6 +346,21 @@ fun CassetteDeck(
                         )
                 ) {
 
+                    // FIX (bug "artis tidak muncul di kaset pada device kecil"):
+                    // label kaset punya tinggi TETAP (103dp) dengan blok teks yang
+                    // sudah pas-pasan. Di device dengan "Ukuran font" sistem lebih
+                    // besar (umum di HP layar kecil), ukuran sp ikut membesar sehingga
+                    // total tinggi teks melebihi ruang label -> Column memberi sisa
+                    // tinggi 0 ke child TERAKHIR di blok judul, yaitu ARTIS, jadi
+                    // artis hilang total sementara judul tetap tampil. Label kaset
+                    // itu elemen grafis berukuran fisik tetap (bukan teks bacaan),
+                    // jadi font scale sistem dikunci ke 1f khusus di dalam label.
+                    CompositionLocalProvider(
+                        LocalDensity provides Density(
+                            density = LocalDensity.current.density,
+                            fontScale = 1f
+                        )
+                    ) {
                     Column(
                         modifier = Modifier.fillMaxSize()
                     ) {
@@ -431,6 +449,13 @@ fun CassetteDeck(
                             verticalArrangement =
                                 Arrangement.Center
                         ) {
+                        // Pengaman kedua: kalau tetap kurang ruang (mis. skin/locale
+                        // dengan tapeType 3 baris), blok judul+artis diukur tanpa batas
+                        // tinggi supaya artis tidak pernah "hilang" jadi tinggi 0.
+                        Column(
+                            modifier = Modifier.wrapContentHeight(unbounded = true),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
 
                             Text(
                                 text = title,
@@ -477,6 +502,7 @@ fun CassetteDeck(
                                         )
                                     )
                             )
+                        }
                         }
 
                         /*
@@ -540,6 +566,7 @@ fun CassetteDeck(
                                 fontSize = 17.sp
                             )
                         }
+                    }
                     }
 
                     // BARU (realism pass): vignette label "menua" -- radial

@@ -300,7 +300,15 @@ fun PlayerScreen(
                                         ShareCardRenderer.renderAndShare(
                                             context = context,
                                             song = currentSong,
-                                            activePresetName = activePreset.name
+                                            activePresetName = activePreset.name,
+                                            // FIX (badge/angka hardcoded): dulu ambil dari
+                                            // Song.bitDepthOrRate yang statis; sekarang pakai
+                                            // sampleRate/bitDepth/isHiRes REAL yang sama persis
+                                            // dengan yang sedang ditampilkan di VFD Status Panel
+                                            // saat ini (sudah di-collect di atas).
+                                            sampleRateHz = sampleRate,
+                                            bitDepth = bitDepth,
+                                            isHiRes = isHiRes
                                         )
                                     }
                                 },
@@ -391,6 +399,9 @@ fun PlayerScreen(
                                 duration = duration,
                                 progressFraction = progressFraction,
                                 format = song?.format ?: "FLAC",
+                                sampleRateHz = sampleRate,
+                                bitDepth = bitDepth,
+                                isHiRes = isHiRes,
                                 waveform = waveform,
                                 onSeek = {
                                     vm.seekTo(

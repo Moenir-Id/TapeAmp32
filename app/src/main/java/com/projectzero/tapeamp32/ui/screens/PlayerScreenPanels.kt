@@ -180,6 +180,14 @@ internal fun PlayerTrackBar(
     duration: Long,
     progressFraction: Float,
     format: String,
+    // FIX (bug "24-BIT / 96kHz sama di semua lagu"): string resource
+    // player_track_format_info dulu meng-hardcode literal "24-BIT / 96kHz" di
+    // dalamnya, jadi baris di bawah kaset ini SELALU menampilkan angka itu apa pun
+    // lagunya. Sekarang sample rate/bit depth REAL dari AudioTrack yang sedang
+    // aktif (PlayerManager) diteruskan dari PlayerScreen.
+    sampleRateHz: Int,
+    bitDepth: Int,
+    isHiRes: Boolean,
     waveform: FloatArray?,
     onSeek: (Float) -> Unit
 ) {
@@ -252,64 +260,38 @@ internal fun PlayerTrackBar(
         )
 
         /* ========================================================
-         * FORMAT + HI-RES
+         * FORMAT
+         * --------------------------------------------------------
+         * FIX (bug "badge HI-RES emas selalu nyala walau lagu bukan
+         * hi-res"): sebelumnya ada PlayerBadge("HI-RES") statis di sini
+         * yang SELALU ditampilkan untuk lagu apa pun (MP3 128kbps pun
+         * tetap dikasih badge ini) -- gak pernah dicek ke isHiRes sama
+         * sekali, murni dekorasi/hardcoded. Indikator HI-RES yang BENERAN
+         * real-time (nyambung ke PlayerManager.isHiRes, cuma nyala kalau
+         * source-nya lossless DAN sample rate/bit depth aktual di
+         * AudioTrack memang tinggi) sudah ada terpisah di VFD Status
+         * Panel (baris cyan "HI-RES", lihat VfdStatusPanel.kt) -- jadi
+         * badge statis di sini dihapus total, bukan disambungkan ulang,
+         * supaya tidak dobel dengan indikator yang sudah benar itu.
          * ======================================================== */
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement =
-                Arrangement.SpaceBetween,
-            verticalAlignment =
-                Alignment.CenterVertically
-        ) {
-
-            Text(
-                text = stringResource(R.string.player_track_format_info, format),
-                color = TextMuted,
-                fontFamily = MonoFont,
-                fontSize = 8.sp,
-                maxLines = 1
-            )
-
-            PlayerBadge(
-                text = stringResource(R.string.player_badge_hires)
-            )
-        }
+        Text(
+            text = if (sampleRateHz > 0) {
+                stringResource(
+                    R.string.player_track_format_info,
+                    format,
+                    formatAudioSpec(sampleRateHz, bitDepth, isHiRes)
+                )
+            } else {
+                // Belum ada AudioTrack aktif -> jangan tampilkan angka karangan.
+                format
+            },
+            color = TextMuted,
+            fontFamily = MonoFont,
+            fontSize = 8.sp,
+            maxLines = 1
+        )
     }
-}
-
-/* ================================================================
- * BADGE
- * ================================================================ */
-
-@Composable
-internal fun PlayerBadge(
-    text: String
-) {
-
-    Text(
-        text = text,
-        color = BgBlack,
-        fontFamily = MonoFont,
-        fontWeight = FontWeight.Bold,
-        fontSize = 7.sp,
-        modifier = Modifier
-            .clip(
-                RoundedCornerShape(2.dp)
-            )
-            .background(
-                GoldBright
-            )
-            .border(
-                width = 0.7.dp,
-                color = GoldBright,
-                shape = RoundedCornerShape(2.dp)
-            )
-            .padding(
-                horizontal = 5.dp,
-                vertical = 2.dp
-            )
-    )
 }
 
 /* ================================================================
@@ -334,4 +316,14 @@ fun formatMs(ms: Long): String {
         minutes,
         seconds
     )
+}
+
+/**
+ * Label spesifikasi audio REAL, mis. "24-BIT / 96kHz" (hi-res) atau "44.1kHz".
+ * Bit depth cuma disertakan untuk sumber lossless hi-res, sama seperti di VFD.
+ */
+fun formatAudioSpec(sampleRateHz: Int, bitDepth: Int, isHiRes: Boolean): String {
+    val khz = sampleRateHz / 1000f
+    val khzLabel = if (khz == khz.toInt().toFloat()) "${khz.toInt()}kHz" else "%.1fkHz".format(khz)
+    return if (isHiRes) "$bitDepth-BIT / $khzLabel" else khzLabel
 }

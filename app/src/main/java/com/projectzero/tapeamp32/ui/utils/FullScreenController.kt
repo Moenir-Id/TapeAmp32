@@ -74,10 +74,32 @@ object FullScreenController {
 
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
+        // FIX (fullscreen tidak penuh di device ber-notch/punch-hole): tanpa ini
+        // Android 9+ menyisakan strip hitam / status bar di area cutout walau
+        // systemBars sudah di-hide. SHORT_EDGES = konten boleh menutupi area
+        // cutout di sisi pendek layar hanya saat mode fullscreen aktif.
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+            val attrs = window.attributes
+            val wanted = if (enable) {
+                android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+            } else {
+                android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT
+            }
+            if (attrs.layoutInDisplayCutoutMode != wanted) {
+                attrs.layoutInDisplayCutoutMode = wanted
+                window.attributes = attrs
+            }
+        }
+
         if (enable) {
             controller.systemBarsBehavior =
                 WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
             controller.hide(WindowInsetsCompat.Type.systemBars())
+            // Beberapa OEM mengabaikan hide() yang dipanggil sebelum decor view
+            // selesai attach/layout -> ulangi sekali lagi di antrean berikutnya.
+            window.decorView.post {
+                controller.hide(WindowInsetsCompat.Type.systemBars())
+            }
         } else {
             controller.show(WindowInsetsCompat.Type.systemBars())
         }

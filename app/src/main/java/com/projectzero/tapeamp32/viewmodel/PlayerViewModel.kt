@@ -1026,7 +1026,11 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
             // lagi dengan URI yang sama. Sekarang gagal scan cukup batal & reset status,
             // biar pengguna cuma perlu pilih ulang folder lewat Import.
             val rawSongs = runCatching {
-                withContext(Dispatchers.IO) { musicRepository.scanSelectedFolder(folderUri) }
+                // BARU (patch "rescan folder instan"): _library.value berisi hasil scan
+                // terakhir (baik dari cache disk saat startup, maupun scan sebelumnya) --
+                // dipakai sebagai oldCache supaya file yang belum berubah tidak perlu
+                // di-fetch ulang metadatanya (lihat MusicRepository.scanSelectedFolder()).
+                withContext(Dispatchers.IO) { musicRepository.scanSelectedFolder(folderUri, _library.value) }
             }.getOrElse {
                 if (showProgress) {
                     _isScanning.value = false
@@ -1129,9 +1133,16 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         }
 
         val merged = LinkedHashMap<Long, Song>()
+        // BARU (patch "rescan folder instan"): sama seperti scanFolder() di atas --
+        // _library.value (hasil scan/cache terakhir, mencakup SEMUA folder tergabung)
+        // dipakai sebagai oldCache untuk tiap folder. Aman dipakai apa adanya untuk
+        // folder mana pun karena Song.id (hash docId) sudah unik per file per folder,
+        // jadi lookup di scanSelectedFolder() otomatis cuma match ke entri milik folder
+        // yang sedang di-scan.
+        val oldCache = _library.value
         folders.forEachIndexed { index, uri ->
             val songs = runCatching {
-                withContext(Dispatchers.IO) { musicRepository.scanSelectedFolder(uri) }
+                withContext(Dispatchers.IO) { musicRepository.scanSelectedFolder(uri, oldCache) }
             }.getOrDefault(emptyList())
             songs.forEach { merged[it.id] = it }
             if (showProgress) {
@@ -2263,7 +2274,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         obj.put("uri", song.uri.toString())
         obj.put("path", song.path)
         obj.put("format", song.format)
-        obj.put("bitDepthOrRate", song.bitDepthOrRate)
         return obj.toString()
     }
 
@@ -2279,8 +2289,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
                 durationMs = obj.optLong("durationMs"),
                 uri = Uri.parse(obj.optString("uri")),
                 path = obj.optString("path", ""),
-                format = obj.optString("format", "FLAC"),
-                bitDepthOrRate = obj.optString("bitDepthOrRate", "24-BIT / 96kHz")
+                format = obj.optString("format", "FLAC")
             )
         }.getOrNull()
     }

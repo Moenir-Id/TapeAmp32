@@ -172,8 +172,7 @@
     <string name="player_no_song_banner">TIDAK ADA LAGU  •  BUKA LIBRARY ATAU IMPORT MUSIK</string>
     <string name="player_streaming_label">STREAMING</string>
     <string name="player_error_prefix">ERROR  •  %1$s</string>
-    <string name="player_track_format_info">%1$s • 24-BIT / 96kHz</string>
-    <string name="player_badge_hires">HI-RES</string>
+    <string name="player_track_format_info">%1$s • %2$s</string>
     <string name="player_vfd_sleep_off">MATI</string>
     <string name="player_vfd_sleep_end_of_track">SAMPAI LAGU SELESAI</string>
 
