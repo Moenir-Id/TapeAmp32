@@ -157,6 +157,21 @@ gradle wrapper --gradle-version 9.5
 - Android SDK dengan `compileSdk 34` terpasang
 - Koneksi internet saat sync pertama kali (download dependency dari Google/Maven Central)
 
+## Versi Desktop (Windows)
+
+Folder [`desktop/`](./desktop) berisi versi PC dari TapeAmp 32 (Compose Desktop). UI, ViewModel,
+dan DSP EQ memakai kode yang **sama** dengan `app/` (disalin otomatis saat build), jadi perubahan
+di `app/` ikut ke desktop. Ini proyek Gradle terpisah — buka folder `desktop/` sendiri di IntelliJ IDEA.
+
+```bash
+cd desktop
+gradlew.bat run            # jalankan
+gradlew.bat packageExe     # installer EXE (butuh WiX Toolset 3.14)
+```
+
+Daftar pintasan keyboard, struktur, dan batasan versi desktop ada di
+[`desktop/README.md`](./desktop/README.md).
+
 ## Status
 
 Masih aktif dikembangkan — versi saat ini **2.6**. Bug reports & feedback
